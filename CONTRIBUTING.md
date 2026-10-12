@@ -12,7 +12,7 @@ src/vgl/
 ├── exceptions.py
 ├── utils/            # images (mask burn-in, downscale, base64), labels, vertex env check
 └── dialects/thales/
-    ├── model.py, payloads.py
+    ├── model.py, payloads.py   # ThalesVGL; Generate, EditImages, EditImageWithMask
     ├── output_schema/, input_schema/
     └── prompts/<prompt>/system_prompt.txt, final_prompt.txt
 ```
