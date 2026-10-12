@@ -102,9 +102,9 @@ Everything vgl raises inherits from `vgl.exceptions.VGLError`, except a bad payl
 | `MaxTokensError` | the model ran out of output tokens mid-reply |
 | `PromptNotFoundError` | a bundled prompt is missing; a packaging fault, please report it |
 
-## Languages and dialects
+## Dialects
 
-A language is a family of structured JSON; FIBO's VGL is one. A dialect is a small variant of a language, with its own model, payloads, and prompts. The payload you import decides the dialect. vgl ships the FIBO language's Thales dialect: no aesthetic scores, and every edit states its change in `edit_instruction`.
+A dialect is a small variant of VGL, with its own model, payloads, and prompts. The payload you import decides the dialect. vgl ships the Thales dialect: no aesthetic scores, and every edit states its change in `edit_instruction`.
 
 ## More
 

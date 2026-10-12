@@ -5,19 +5,28 @@
 ```
 src/vgl/
 ├── api.py            # create, modify
+├── model.py          # the base VGL model every dialect builds on
 ├── payload.py        # the base every dialect's payloads build on
 ├── prompting.py      # loads and renders a prompt pair, composes a style preset
 ├── gateway.py        # litellm call, retries, Gemini fallback
-├── images.py         # mask burn-in, downscale, base64
-├── vertex.py         # Vertex env check
-├── exceptions.py, labels.py, log.py
-└── languages/fibo/
-    ├── model.py, payloads.py            # shared by FIBO dialects
-    └── dialects/thales/
-        ├── model.py, payloads.py
-        ├── output_schema/, input_schema/
-        └── prompts/<prompt>/system_prompt.txt, final_prompt.txt
+├── exceptions.py
+├── utils/            # images (mask burn-in, downscale, base64), labels, vertex env check
+└── dialects/thales/
+    ├── model.py, payloads.py   # ThalesVGL; Generate, EditImages, EditImageWithMask
+    ├── output_schema/, input_schema/
+    └── prompts/<prompt>/system_prompt.txt, final_prompt.txt
 ```
+
+## Dialects and languages
+
+A new dialect is a small variant of VGL, e.g. dropping a field or requiring one. Add it as `dialects/<name>/`, with a model that subclasses `VGL` and its own payloads and prompts. Dialects are named, not versioned.
+
+A new language is a structured JSON that isn't VGL at all, e.g. one a non-FIBO model needs. There's only one language today, so there's no language level in the layout. When a second one is needed:
+
+1. Move `model.py` and `dialects/` into `languages/vgl/`.
+2. Add `languages/<name>/` beside it, with its own base model and `dialects/`.
+3. In `payload.py`, loosen what's tied to `VGL`: `T`'s bound, `vgl_model`'s type, and `vgl_json`. If the new language parses differently, override `parse` in its payloads.
+4. Keep the old `vgl.dialects.<name>` import paths working, since they're public.
 
 ## Prompts
 

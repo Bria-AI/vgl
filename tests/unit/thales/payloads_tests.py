@@ -31,13 +31,13 @@ class TestPromptChoice:
         assert (request.prompts.name, request.temperature) == ("generate", 0.7)
 
     def test_one_image_should_use_the_single_image_edit(self, an_image):
-        assert _prompt_name(EditImages(prompt="p", images=[an_image])) == "edit_1.5_image"
+        assert _prompt_name(EditImages(prompt="p", images=[an_image])) == "edit_image"
 
     def test_several_images_should_use_the_multi_image_edit(self, an_image, another_image):
-        assert _prompt_name(EditImages(prompt="p", images=[an_image, another_image])) == "edit_1.5_multi_images"
+        assert _prompt_name(EditImages(prompt="p", images=[an_image, another_image])) == "edit_multi_images"
 
     def test_a_mask_should_use_the_mask_edit(self, an_image, a_mask):
-        assert _prompt_name(EditImageWithMask(prompt="p", image=an_image, mask=a_mask)) == "edit_1.5_image_mask"
+        assert _prompt_name(EditImageWithMask(prompt="p", image=an_image, mask=a_mask)) == "edit_image_mask"
 
     @pytest.mark.parametrize("images", [1, 2], ids=["one", "several"])
     def test_an_input_image_vgl_should_switch_an_edit_to_its_input_vgl_prompt(self, a_vgl, an_image, another_image, images):
@@ -59,7 +59,7 @@ class TestPromptChoice:
         name = _prompt_name(payload)
 
         # Assert
-        assert name == "edit_1.5_image_mask_input_vgl"
+        assert name == "edit_image_mask_input_vgl"
 
 
 @pytest.mark.unit
