@@ -1,5 +1,8 @@
 name: CI
 
+# Python package CI, self-contained in this repo (no shared/reusable workflow).
+# Stages: format / lint / typecheck / security, then a test matrix.
+
 on:
   pull_request:
   push:
@@ -14,9 +17,88 @@ permissions:
   pull-requests: read
   contents: read
 
+env:
+  # Gitleaks version — keep in sync with the pin in .pre-commit-config.yaml.
+  GITLEAKS_VERSION: "8.30.0"
+  TRIVY_VERSION: "v0.69.3"
+
 jobs:
-  ci:
-    uses: Bria-AI/github-workflows/.github/workflows/python-package-ci.yml@main
-    with:
-      package-name: vgl
-    secrets: inherit
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --all-groups --all-extras ruff format --check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --all-groups --all-extras ruff check
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install libatomic1 for pyright
+        run: sudo apt-get update && sudo apt-get install -y libatomic1
+      - uses: astral-sh/setup-uv@v5
+      - name: Run Pyright
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: uv run --all-groups --all-extras pyright
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gitleaks
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/bin"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o /tmp/gl.tar.gz
+          tar -xzf /tmp/gl.tar.gz -C "$HOME/bin" gitleaks
+          chmod +x "$HOME/bin/gitleaks"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Run gitleaks
+        run: gitleaks detect --no-git --verbose --source . --config .gitleaks.toml
+
+      - name: Install trivy
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/bin"
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b "$HOME/bin" "$TRIVY_VERSION"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Scan Python dependencies
+        # CRITICAL/HIGH findings fail the job.
+        run: |
+          trivy fs \
+            --pkg-types library \
+            --scanners vuln \
+            --severity CRITICAL,HIGH \
+            --exit-code 1 \
+            --format table \
+            .
+
+  test:
+    needs: [format, lint, typecheck, security]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --all-groups --all-extras
+      - name: Run unit tests
+        run: uv run pytest

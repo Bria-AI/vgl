@@ -85,7 +85,9 @@ One artifact ships from this repo: the **`vgl` package → PyPI, via release-ple
   then (it re-evaluates automatically when Release gate finishes). Dispatching needs repo write
   access; add required reviewers to the `release-gate` environment to limit it to specific people.
 
-`ci.yml` runs the shared `Bria-AI/github-workflows` Python CI on every PR and on push to `main`.
+`ci.yml` is a self-contained Python CI (no shared/reusable workflow) that runs on every PR and on
+push to `main`: `format` / `lint` / `typecheck` / `security` (gitleaks + trivy), then a test matrix
+(Python 3.10–3.14 × ubuntu/macOS).
 
 See `CONTRIBUTING.md` for the source layout and the human-facing version of the above, and
 `README.md` for the library's public API.
