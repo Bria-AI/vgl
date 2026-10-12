@@ -19,6 +19,6 @@ jobs:
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.DEVOPS_PAT_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
           release-type: python
           package-name: vgl
