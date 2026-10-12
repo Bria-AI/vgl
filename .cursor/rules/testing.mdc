@@ -1,0 +1,6 @@
+---
+description: pytest layout, naming, markers, Arrange-Act-Assert, and running tests after changes
+alwaysApply: true
+---
+
+@.agents/rules/testing.md

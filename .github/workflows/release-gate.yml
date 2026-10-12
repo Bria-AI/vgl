@@ -1,0 +1,39 @@
+name: Release gate
+
+# The packaging checks — wheel contents + live smoke test against real LLMs. Dispatch-only:
+# it spends real tokens, so it never runs on a commit. Dispatch it on the release-please
+# branch; the PR gate then sees its green run for that commit and unblocks the release PR.
+#
+# Who can run it: workflow_dispatch already needs repo write access (a public repo doesn't
+# change that). To narrow it to specific people, add them as required reviewers on the
+# `release-gate` environment — the job then waits for one of them to approve each run.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  packaging:
+    name: Packaging
+    runs-on: ubuntu-latest
+    environment: release-gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Build wheel
+        run: uv build --wheel
+      - name: Check wheel contents
+        run: uv run python tests/packaging/check_wheel.py dist/*.whl
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        id: gcp-auth
+        with:
+          credentials_json: ${{ secrets.VERTEX_SA_KEY }}
+      - name: Live smoke test
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VERTEXAI_PROJECT: ${{ secrets.VERTEXAI_PROJECT }}
+          VERTEXAI_LOCATION: ${{ secrets.VERTEXAI_LOCATION }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcp-auth.outputs.credentials_file_path }}
+        run: uv run --group examples python tests/packaging/smoke_test.py

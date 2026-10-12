@@ -1,0 +1,69 @@
+name: PR gate
+
+# The required check on every PR to dev. Cheap, runs on each PR:
+#   - an ordinary PR passes immediately;
+#   - the release-please PR passes only once the Release gate workflow (the packaging
+#     checks) has a green run for the PR's head commit — until then it stays pending and
+#     blocks the merge.
+# It re-evaluates automatically when Release gate finishes (workflow_run), so no new commit
+# is needed to turn green after a dispatch. Require the `packaging-gate` status in dev's
+# branch protection to make it a merge gate.
+#
+# pull_request_target (not pull_request) so fork PRs on this public repo get a write-scoped
+# token and can be stamped — safe here because this job never checks out or runs PR code; it
+# only reads the PR's branch name and queries the API.
+on:
+  pull_request_target:
+    branches: [dev]
+    types: [opened, reopened, synchronize]
+  workflow_run:
+    workflows: ["Release gate"]
+    types: [completed]
+
+permissions:
+  contents: read
+  statuses: write
+  actions: read
+
+jobs:
+  gate:
+    name: PR gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate the packaging gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_REF: ${{ github.event.pull_request.head.ref }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_REF: ${{ github.event.workflow_run.head_branch }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          if [[ "$EVENT" == "workflow_run" ]]; then
+            SHA="$RUN_SHA"; REF="$RUN_REF"
+          else
+            SHA="$PR_SHA"; REF="$PR_REF"
+          fi
+
+          post() {  # state  description
+            gh api "repos/$REPO/statuses/$SHA" \
+              -f state="$1" -f context="packaging-gate" -f description="$2" >/dev/null
+          }
+
+          # Only the release-please PR needs the packaging checks.
+          if [[ "$REF" != release-please--* ]]; then
+            post success "Not a release PR"
+            exit 0
+          fi
+
+          # Pass only if the Release gate workflow has a green run for this exact commit.
+          green=$(gh api \
+            "repos/$REPO/actions/workflows/release-gate.yml/runs?head_sha=$SHA&status=completed" \
+            --jq '[.workflow_runs[] | select(.conclusion=="success")] | length' 2>/dev/null || echo 0)
+          if [[ "${green:-0}" -gt 0 ]]; then
+            post success "Release gate passed for this commit"
+          else
+            post pending "Dispatch the Release gate workflow on this branch to unblock"
+          fi

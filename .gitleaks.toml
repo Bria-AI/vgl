@@ -1,0 +1,17 @@
+[extend]
+useDefault = true
+
+[allowlist]
+paths = ['''\.env.*''']
+
+[[rules]]
+id = "bria-api-token"
+description = "Bria API Token"
+regex = '''(?i)bria[_\-]?api[_\-]?token\s*[=:]\s*["']?([a-f0-9]{32})["']?'''
+keywords = ["bria"]
+
+[[rules]]
+id = "generic-api-token-assignment"
+description = "Hardcoded API token assignment"
+regex = '''api_token\s*=\s*["'][a-f0-9]{32,}["']'''
+keywords = ["api_token"]

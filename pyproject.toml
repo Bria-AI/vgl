@@ -1,0 +1,124 @@
+[project]
+name = "vgl"
+version = "0.1.0"
+description = "Turn a prompt, or images plus a prompt, into a structured JSON scene description (VGL) for image models like FIBO."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Bria AI" }]
+keywords = ["vgl", "fibo", "bria", "image generation", "prompt", "structured output", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+
+requires-python = ">=3.10"
+# vgl is a base package: every spec stays an open lower bound, floored at the oldest
+# version whose API vgl actually uses. A hard pin here becomes a resolution conflict for
+# every consumer, who then has to carry an override.
+dependencies = [
+    # One function, boltons.iterutils.remap, stable for years.
+    "boltons>=20.0.0",
+    # The whole surface used is Image.Image/new/open/composite, Image.Resampling and
+    # .convert/.resize/.save. The newest of those, Image.Resampling, landed in 9.1.
+    "pillow>=9.1.0",
+    # The VGL models and payloads. v2-only API, so 2.0 is the honest floor.
+    "pydantic>=2.0",
+    # Floor is a version vgl is known to run on, not the newest release.
+    "litellm>=1.80.11",
+    # Imported for the base class of litellm's provider errors. Floor matches litellm's own.
+    "openai>=2.20.0",
+    # NOT used by vgl. litellm imports yaml at base import time
+    # (integrations/dotprompt/prompt_manager.py) but only declares pyyaml under its `cli`
+    # and `proxy` extras, so without this a clean install of vgl fails on `import vgl`
+    # with ModuleNotFoundError: yaml. Verified against litellm 1.90.0. Remove only once
+    # litellm declares it, or stops importing it unconditionally.
+    "pyyaml>=6.0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/Bria-AI/vgl"
+Documentation = "https://github.com/Bria-AI/vgl#readme"
+Issues = "https://github.com/Bria-AI/vgl/issues"
+Changelog = "https://github.com/Bria-AI/vgl/blob/dev/CHANGELOG.md"
+
+[project.optional-dependencies]
+# litellm reaches Vertex by doing `import google.auth` to read GOOGLE_APPLICATION_CREDENTIALS,
+# but declares it only under its own extras — so nothing installs it and a clean vgl dies on the
+# first Vertex call. Narrower than litellm's own suggestion of google-cloud-aiplatform, which is
+# a far larger tree; google-auth is what litellm actually imports and is verified sufficient.
+vertex = ["google-auth>=2.0"]
+
+# litellm reaches Bedrock through boto3 but declares it under no extra of its own, so the failure
+# is the same shape as the Vertex one: fine until the first call. vgl dropped boto3 in PR #45 as
+# an unused direct import, which it still is — this is litellm's need, declared honestly.
+bedrock = ["boto3>=1.34"]
+
+# Every optional dependency, for a consumer that does not want to track which provider needs what.
+all = ["vgl[vertex]", "vgl[bedrock]"]
+
+# Local development only — PEP 735 groups are not published in the wheel, which is why the
+# Vertex dependency above is an extra instead: a consumer has to be able to install it.
+[dependency-groups]
+# google-auth is the `vertex` extra's dependency; the Vertex validation tests import it.
+test = ["pytest>=8.0.0", "google-auth>=2.0"]
+
+lint = ["pyright>=1.1.408", "ruff>=0.15.12"]
+
+# The smoke test loads a .env; python-dotenv otherwise arrives only transitively, via litellm.
+examples = ["python-dotenv>=1.0"]
+
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    { include-group = "examples" },
+]
+
+[build-system]
+# 1.27 is the first to support the PEP 639 license fields.
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vgl"]
+
+[tool.hatch.build]
+include = ["src/**/*"]
+
+
+
+[tool.ruff.lint]
+select = ["C4", "E", "F", "I", "PERF", "UP"]
+ignore = ["PERF203"]
+
+[tool.ruff]
+line-length = 160
+target-version = "py310"
+
+[tool.pytest.ini_options]
+log_cli = true
+python_files = ["*_tests.py"]
+testpaths = ["tests"]
+markers = [
+    "unit: isolated, no I/O beyond tmp_path and the bundled package data",
+    "integration: several real components together, still no network",
+]
+
+[tool.pyright]
+enableExperimentalFeatures = true
+exclude = ["**/.venv", "**/node_modules", "**/__pycache__"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"

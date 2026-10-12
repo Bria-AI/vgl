@@ -1,0 +1,94 @@
+"""The Thales payloads. Each one maps to a prompt in ``prompts/`` and returns a ThalesVGL."""
+
+import json
+from collections.abc import Sequence
+from functools import cache
+from pathlib import Path
+from typing import ClassVar
+
+from PIL import Image
+from pydantic import Field, model_validator
+
+from vgl.languages.fibo.dialects.thales.model import ThalesVGL
+from vgl.languages.fibo.payloads import FiboPayload, vgl_json
+from vgl.payload import Request
+from vgl.utils.images import apply_gray_mask
+
+_DIALECT = Path(__file__).parent
+_PROMPTS = _DIALECT / "prompts"
+
+
+@cache
+def _input_schema(name: str) -> str:
+    """The field guide that fills ``{llm_input_schema}``."""
+    return (_DIALECT / "input_schema" / f"{name}.txt").read_text(encoding="utf-8")
+
+
+@cache
+def _output_schema(name: str) -> dict:
+    return json.loads((_DIALECT / "output_schema" / f"{name}.json").read_text(encoding="utf-8"))
+
+
+class ThalesPayload(FiboPayload[ThalesVGL]):
+    vgl_model: ClassVar = ThalesVGL
+
+
+class Generate(ThalesPayload):
+    """A new VGL from a prompt."""
+
+    creates: ClassVar[bool] = True
+
+    def to_request(self) -> Request:
+        return Request(
+            prompts=_PROMPTS / "generate",
+            context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("generate")},
+            response_schema=_output_schema("generate"),
+            temperature=0.7,
+        )
+
+
+class _Edit(ThalesPayload):
+    #: The VGL of the first image. With it, the ``_input_vgl`` prompts treat it as the baseline; without, the images are the only source.
+    input_image_vgl: ThalesVGL | None = None
+
+    def _edit_request(self, prompt: str, input_schema: str, images: Sequence[Image.Image]) -> Request:
+        context: dict[str, object] = {"user_prompt": self.prompt, "llm_input_schema": _input_schema(input_schema)}
+        # Every edit prompt has an _input_vgl twin that takes the input image's VGL as its baseline.
+        if self.input_image_vgl is not None:
+            prompt = f"{prompt}_input_vgl"
+            context["input_image_vgl"] = vgl_json(self.input_image_vgl)
+        return Request(prompts=_PROMPTS / prompt, context=context, response_schema=_output_schema("edit"), images=tuple(images))
+
+
+class EditImages(_Edit):
+    """Edit from 1 to 4 images. The prompt refers to them as ``<image_1>`` to ``<image_N>``, in list order.
+
+    Each image is sent as an RGB JPEG, downscaled to about 0.26 MP if larger, keeping its aspect ratio.
+    """
+
+    images: list[Image.Image] = Field(min_length=1, max_length=4)
+
+    def to_request(self) -> Request:
+        if len(self.images) == 1:
+            return self._edit_request("edit_1.5_image", "edit", self.images)
+        return self._edit_request("edit_1.5_multi_images", "edit_multi_ref", self.images)
+
+
+class EditImageWithMask(_Edit):
+    """Edit the masked area of one image. White in the mask is the area to change; the mask must match the image's size.
+
+    The mask is painted mid-grey into the image, which is then sent like any other: RGB JPEG, downscaled to
+    about 0.26 MP if larger. So the mask is always resized exactly with its image.
+    """
+
+    image: Image.Image
+    mask: Image.Image
+
+    @model_validator(mode="after")
+    def _mask_matches_image(self) -> "EditImageWithMask":
+        if self.mask.size != self.image.size:
+            raise ValueError(f"mask is {self.mask.size} but image is {self.image.size}; they must match")
+        return self
+
+    def to_request(self) -> Request:
+        return self._edit_request("edit_1.5_image_mask", "inpaint", [apply_gray_mask(self.image, self.mask)])

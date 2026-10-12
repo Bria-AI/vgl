@@ -1,0 +1,7 @@
+---
+description: Prompt files are the exact bytes the model receives — never reformat them
+alwaysApply: false
+globs: ["src/vgl/**/prompts/**", "src/vgl/**/config/**"]
+---
+
+@.agents/rules/prompts.md
