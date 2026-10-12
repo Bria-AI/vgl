@@ -626,7 +626,7 @@ class TestOutputSchemaDialect:
     """The bundled schema is authored in Gemini's OpenAPI dialect; Bedrock validates the standard.
 
     Translated on the way out, so the bytes Gemini receives are the ones every prompt was tuned
-    against. Verified end to end: a live Bedrock call returns a valid FiboVGL only once this holds.
+    against. Verified end to end: a live Bedrock call returns a valid VGL only once this holds.
     """
 
     _GEMINI_DIALECT = {

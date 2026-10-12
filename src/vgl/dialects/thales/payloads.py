@@ -9,9 +9,8 @@ from typing import ClassVar
 from PIL import Image
 from pydantic import Field, model_validator
 
-from vgl.languages.fibo.dialects.thales.model import ThalesVGL
-from vgl.languages.fibo.payloads import FiboPayload, vgl_json
-from vgl.payload import Request
+from vgl.dialects.thales.model import ThalesVGL
+from vgl.payload import Payload, Request, vgl_json
 from vgl.utils.images import apply_gray_mask
 
 _DIALECT = Path(__file__).parent
@@ -29,7 +28,7 @@ def _output_schema(name: str) -> dict:
     return json.loads((_DIALECT / "output_schema" / f"{name}.json").read_text(encoding="utf-8"))
 
 
-class ThalesPayload(FiboPayload[ThalesVGL]):
+class ThalesPayload(Payload[ThalesVGL]):
     vgl_model: ClassVar = ThalesVGL
 
 
@@ -70,8 +69,8 @@ class EditImages(_Edit):
 
     def to_request(self) -> Request:
         if len(self.images) == 1:
-            return self._edit_request("edit_1.5_image", "edit", self.images)
-        return self._edit_request("edit_1.5_multi_images", "edit_multi_ref", self.images)
+            return self._edit_request("edit_image", "edit", self.images)
+        return self._edit_request("edit_multi_images", "edit_multi_ref", self.images)
 
 
 class EditImageWithMask(_Edit):
@@ -91,4 +90,4 @@ class EditImageWithMask(_Edit):
         return self
 
     def to_request(self) -> Request:
-        return self._edit_request("edit_1.5_image_mask", "inpaint", [apply_gray_mask(self.image, self.mask)])
+        return self._edit_request("edit_image_mask", "inpaint", [apply_gray_mask(self.image, self.mask)])

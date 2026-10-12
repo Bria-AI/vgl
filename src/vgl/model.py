@@ -1,4 +1,4 @@
-"""The FIBO language's base VGL model."""
+"""The base VGL model every dialect builds on."""
 
 from pydantic import BaseModel, Field
 
@@ -49,8 +49,8 @@ class TextRender(BaseModel):
     appearance_details: str | None = Field(None, description="Any other notable visual details.")
 
 
-class FiboVGL(BaseModel):
-    """Fields every FIBO dialect shares. A dialect subclasses this to add its own."""
+class VGL(BaseModel):
+    """Fields every dialect shares. A dialect subclasses this to add its own."""
 
     short_description: str = Field(..., description="A concise summary of the image content, 200 words maximum.")
     objects: list[ObjectDescription] | None = Field(None, description="List of prominent foreground/midground objects.")

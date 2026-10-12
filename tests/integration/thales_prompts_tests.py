@@ -42,7 +42,7 @@ class TestBundledPrompts:
         assert system_prompt.strip() and payload.prompt in final_prompt
 
     def test_every_bundled_prompt_should_be_reachable(self):
-        from vgl.languages.fibo.dialects.thales.payloads import _PROMPTS
+        from vgl.dialects.thales.payloads import _PROMPTS
 
         bundled = {entry.name for entry in _PROMPTS.iterdir() if entry.is_dir()}
         assert bundled == {p.to_request().prompts.name for p in PAYLOADS}
