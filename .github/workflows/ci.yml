@@ -36,7 +36,7 @@ jobs:
 
   test:
     runs-on: ${{ matrix.os }}
-    # ponytail: 3.15 can't install yet (litellm's fastuuid has no 3.15 wheel); make it blocking once it does.
+    # 3.15 can't install yet (litellm's fastuuid has no 3.15 wheel); make it blocking once it does.
     continue-on-error: ${{ matrix.python-version == '3.15' }}
     strategy:
       fail-fast: false
