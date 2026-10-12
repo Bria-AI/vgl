@@ -85,7 +85,7 @@ One artifact ships from this repo: the **`vgl` package → PyPI, via release-ple
   then (it re-evaluates automatically when Release gate finishes). Dispatching needs repo write
   access; add required reviewers to the `release-gate` environment to limit it to specific people.
 
-`ci.yml` runs on every PR and on push to `dev`: `uv lock --check`, ruff, pyright, gitleaks, and pytest on Python 3.10–3.13. It is self-contained, since a public repo can't call the private `Bria-AI/github-workflows`.
+`ci.yml` runs on every PR and on push to `dev`: `uv lock --check`, ruff, pyright, gitleaks, and pytest on Python 3.10–3.15 across Linux, macOS, and Windows. It is self-contained, since a public repo can't call the private `Bria-AI/github-workflows`.
 
 See `CONTRIBUTING.md` for the source layout and the human-facing version of the above, and
 `README.md` for the library's public API.
