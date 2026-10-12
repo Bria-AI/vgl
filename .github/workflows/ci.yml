@@ -4,19 +4,45 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
-  pull-requests: read
   contents: read
 
 jobs:
-  ci:
-    uses: Bria-AI/github-workflows/.github/workflows/python-package-ci.yml@main
-    with:
-      package-name: vgl
-    secrets: inherit
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv lock --check
+      - run: uv run --all-groups --all-extras ruff format --check
+      - run: uv run --all-groups --all-extras ruff check
+      - run: uv run --all-groups --all-extras pyright
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gitleaks
+        run: |
+          set -euo pipefail
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.0/gitleaks_8.30.0_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks detect --no-git --verbose --config .gitleaks.toml --source .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv run --all-groups --all-extras pytest
