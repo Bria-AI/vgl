@@ -24,7 +24,7 @@ def create(
     system_prompt: str | None = None,
     input_schema: str | None = None,
     response_schema: dict | None = None,
-    thinking_level: ThinkingLevel | None = None,
+    thinking_level: ThinkingLevel | str | None = None,
     temperature: float | None = None,
     max_output_tokens: int | None = None,
 ) -> T:
@@ -32,7 +32,7 @@ def create(
 
     The rest override the payload's defaults; None keeps them. ``system_prompt`` replaces the template, whose
     ``{llm_input_schema}`` and ``{style_preset_block}`` are still filled. ``input_schema`` is the field guide filled
-    into ``{llm_input_schema}``. ``thinking_level`` applies to Gemini 3+ only.
+    into ``{llm_input_schema}``. ``thinking_level`` applies to Gemini 3+ only, and raises ``ValueError`` on an unknown level or an older Gemini.
     """
     if not payload.creates:
         raise TypeError(f"{type(payload).__name__} edits a VGL; pass it to vgl.modify()")

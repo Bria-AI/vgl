@@ -4,8 +4,9 @@ import random
 import re
 import time
 from collections.abc import Sequence
+from enum import Enum
 from functools import cache
-from typing import Any, Literal, cast
+from typing import Any, cast
 
 import litellm
 from litellm.exceptions import APIConnectionError, InternalServerError, RateLimitError, ServiceUnavailableError, Timeout
@@ -28,8 +29,15 @@ RETRYABLE_ERRORS = (InternalServerError, ServiceUnavailableError, APIConnectionE
 #: lands in the same exhausted window — it moves straight to the fallback model instead.
 FALLBACK_ERRORS = (RateLimitError, *RETRYABLE_ERRORS)
 
-#: Gemini 3's thinking levels.
-ThinkingLevel = Literal["minimal", "low", "medium", "high"]
+
+class ThinkingLevel(str, Enum):
+    """Gemini 3's thinking levels. A plain string such as ``"high"`` is accepted wherever one is."""
+
+    MINIMAL = "minimal"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
 
 #: Attempts per model, applied to the primary and the fallback separately.
 MAX_ATTEMPTS = 3
@@ -97,12 +105,27 @@ def _is_anthropic(model_name: str) -> bool:
     return "anthropic" in lowered or "claude" in lowered
 
 
+def _gemini_major(model_name: str) -> int | None:
+    version = re.search(r"gemini-(\d+)", model_name.lower())
+    return int(version.group(1)) if version else None
+
+
 def _thinking_off(model_name: str) -> dict[str, Any]:
     """Thinking as low as it goes. AI Studio rejects a zero budget on Gemini 3+, so it gets the minimal level instead."""
-    version = re.search(r"gemini-(\d+)", model_name.lower())
-    if "vertex_ai" not in model_name.lower() and version and int(version.group(1)) >= 3:
+    if "vertex_ai" not in model_name.lower() and (_gemini_major(model_name) or 0) >= 3:
         return {"thinkingLevel": "minimal"}
     return {"thinkingBudget": 0}
+
+
+def _thinking(model_name: str, thinking_level: ThinkingLevel | str | None) -> dict[str, Any]:
+    """The thinkingConfig for a Gemini call. Raises ValueError on an unknown level or a Gemini before 3, which has no levels."""
+    if thinking_level is None:
+        return _thinking_off(model_name)
+    level = ThinkingLevel(thinking_level)
+    major = _gemini_major(model_name)
+    if major is not None and major < 3:
+        raise ValueError(f"{model_name} has no thinking levels; they need Gemini 3+")
+    return {"thinkingLevel": level.value}
 
 
 @cache
@@ -131,7 +154,7 @@ def call(
     max_output_tokens: int = 7000,
     top_p: float = 1.0,
     labels: dict[str, str] | None = None,
-    thinking_level: ThinkingLevel | None = None,
+    thinking_level: ThinkingLevel | str | None = None,
 ) -> str:
     """One completion, retried and then moved to the Gemini fallback. Returns the reply text.
 
@@ -169,7 +192,7 @@ def _params(
     max_output_tokens: int,
     response_schema: dict | None,
     labels: dict[str, str],
-    thinking_level: ThinkingLevel | None = None,
+    thinking_level: ThinkingLevel | str | None = None,
 ) -> dict[str, Any]:
     """litellm.completion's arguments besides the model and messages."""
     if seed is not None and not _supports_seed(model_name):
@@ -189,8 +212,7 @@ def _params(
 
     params["metadata"] = {"billing_category": "production"}
     # Same on AI Studio and Vertex. Not via response_format: litellm turns that into responseJsonSchema, which samples differently.
-    thinking = {"thinkingLevel": thinking_level} if thinking_level else _thinking_off(model_name)
-    generation_config: dict[str, Any] = {"thinkingConfig": thinking}
+    generation_config: dict[str, Any] = {"thinkingConfig": _thinking(model_name, thinking_level)}
     if response_schema:
         generation_config |= {"responseMimeType": "application/json", "responseSchema": response_schema}
     params["extra_body"] = {"generationConfig": generation_config}

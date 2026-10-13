@@ -30,7 +30,7 @@ class Request:
     #: Replaces the system prompt template in ``prompts``; its placeholders are still filled.
     system_prompt: str | None = None
     #: Gemini 3+ only. None keeps thinking off.
-    thinking_level: ThinkingLevel | None = None
+    thinking_level: ThinkingLevel | str | None = None
     #: Thinking tokens count against this on Gemini.
     max_output_tokens: int = 7000
 
