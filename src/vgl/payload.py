@@ -26,6 +26,10 @@ class Request:
     response_schema: dict
     images: Sequence[Image.Image] = field(default_factory=tuple)
     temperature: float = 0.2
+    #: Gemini's thinking level ("low", "high", ...). None keeps thinking off.
+    thinking_level: str | None = None
+    #: Thinking tokens count against this on Gemini.
+    max_output_tokens: int = 7000
 
 
 def _is_filled(_path, _key, value) -> bool:

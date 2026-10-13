@@ -10,7 +10,7 @@ from vgl.payload import Payload, T
 from vgl.prompting import render_prompts
 from vgl.utils.vertex import validate_vertex_env
 
-DEFAULT_LLM = "gemini/gemini-3.5-flash-lite"
+DEFAULT_LLM = "gemini/gemini-3.5-flash"
 
 
 def create(payload: Payload[T], *, llm: str = DEFAULT_LLM, style_preset_prompt: str | None = None, seed: int | None = None) -> T:
@@ -47,6 +47,8 @@ def _run(payload: Payload[T], *, llm: str, seed: int | None, style_preset: str |
             seed=seed,
             response_schema=request.response_schema,
             temperature=request.temperature,
+            thinking_level=request.thinking_level,
+            max_output_tokens=request.max_output_tokens,
         )
     except LiteLLMAuthenticationError as error:
         raise AuthenticationError(str(error)) from error

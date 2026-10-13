@@ -34,11 +34,15 @@ class TestCreate:
 
     def test_should_default_to_gemini_on_ai_studio(self, sent):
         vgl.create(Generate(prompt="a fox"))
-        assert sent[0]["model_name"] == vgl.DEFAULT_LLM == "gemini/gemini-3.5-flash-lite"
+        assert sent[0]["model_name"] == vgl.DEFAULT_LLM == "gemini/gemini-3.5-flash"
 
     def test_should_send_the_user_prompt_and_seed(self, sent):
         vgl.create(Generate(prompt="a red fox"), seed=7)
         assert "a red fox" in sent[0]["user_prompt"] and sent[0]["seed"] == 7
+
+    def test_should_send_the_payloads_thinking_and_token_limit(self, sent):
+        vgl.create(Generate(prompt="a fox"))
+        assert (sent[0]["thinking_level"], sent[0]["max_output_tokens"]) == ("high", 32768)
 
     def test_should_compose_a_style_preset_into_the_system_prompt(self, sent):
         vgl.create(Generate(prompt="a fox"), style_preset_prompt="Muted film colours.")

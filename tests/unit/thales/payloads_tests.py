@@ -26,9 +26,15 @@ def _prompt_name(payload) -> str:
 
 @pytest.mark.unit
 class TestPromptChoice:
-    def test_generate_should_use_the_generate_prompt_at_a_creative_temperature(self):
+    def test_generate_should_use_the_generate_prompt(self):
+        assert _prompt_name(Generate(prompt="a fox")) == "generate"
+
+    def test_generate_should_think_hard_at_a_low_temperature(self):
         request = Generate(prompt="a fox").to_request()
-        assert (request.prompts.name, request.temperature) == ("generate", 0.7)
+        assert (request.temperature, request.thinking_level, request.max_output_tokens) == (0.2, "high", 32768)
+
+    def test_edits_should_keep_thinking_off(self, an_image):
+        assert EditImages(prompt="p", images=[an_image]).to_request().thinking_level is None
 
     def test_one_image_should_use_the_single_image_edit(self, an_image):
         assert _prompt_name(EditImages(prompt="p", images=[an_image])) == "edit_image"
@@ -122,6 +128,11 @@ class TestResponseSchema:
         schema = EditImages(prompt="p", images=[an_image]).to_request().response_schema
         assert "edit_instruction" in schema["required"]
 
+    def test_generate_should_decide_the_kind_of_image_before_anything_else(self):
+        """The model writes keys in this order, so the decision has to come first to steer the rest."""
+        schema = Generate(prompt="p").to_request().response_schema
+        assert schema["propertyOrdering"][0] == "image_type" and "image_type" in schema["required"]
+
     @pytest.mark.parametrize("payload", ["generate", "edit"])
     def test_the_schema_should_have_no_scores(self, payload, an_image):
         request = Generate(prompt="p").to_request() if payload == "generate" else EditImages(prompt="p", images=[an_image]).to_request()
@@ -139,6 +150,16 @@ class TestParse:
     def test_scores_should_not_be_added(self, a_vgl_dict):
         vgl = Generate(prompt="p").parse(json.dumps(a_vgl_dict))
         assert "aesthetic_score" not in vgl.aesthetics.model_dump()
+
+    def test_the_image_type_decision_should_not_reach_the_vgl(self, a_vgl_dict):
+        # Arrange
+        reply = json.dumps({"image_type": {"branch": "photograph", "medium_and_style": "digital photo", "reason": "a scene"}, **a_vgl_dict})
+
+        # Act
+        vgl = Generate(prompt="p").parse(reply)
+
+        # Assert
+        assert "image_type" not in vgl.model_dump()
 
     @pytest.mark.parametrize("reply", ["not json", "[]", '{"short_description": "only this"}'])
     def test_an_invalid_reply_should_raise(self, reply):

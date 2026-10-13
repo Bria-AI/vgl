@@ -1,5 +1,34 @@
 {
   "properties": {
+    "image_type": {
+      "type": "OBJECT",
+      "properties": {
+        "branch": {
+          "type": "STRING",
+          "enum": [
+            "photograph",
+            "non_photographic_art",
+            "graphic_design"
+          ]
+        },
+        "medium_and_style": {
+          "type": "STRING"
+        },
+        "reason": {
+          "type": "STRING"
+        }
+      },
+      "required": [
+        "branch",
+        "medium_and_style",
+        "reason"
+      ],
+      "propertyOrdering": [
+        "branch",
+        "medium_and_style",
+        "reason"
+      ]
+    },
     "short_description": {
       "type": "STRING"
     },
@@ -79,7 +108,24 @@
           "skin_tone_and_texture",
           "orientation"
         ],
-        "type": "OBJECT"
+        "type": "OBJECT",
+        "propertyOrdering": [
+          "description",
+          "location",
+          "relationship",
+          "relative_size",
+          "shape_and_color",
+          "texture",
+          "appearance_details",
+          "number_of_objects",
+          "pose",
+          "expression",
+          "clothing",
+          "action",
+          "gender",
+          "skin_tone_and_texture",
+          "orientation"
+        ]
       },
       "type": "ARRAY"
     },
@@ -104,7 +150,12 @@
         "direction",
         "shadows"
       ],
-      "type": "OBJECT"
+      "type": "OBJECT",
+      "propertyOrdering": [
+        "conditions",
+        "direction",
+        "shadows"
+      ]
     },
     "aesthetics": {
       "properties": {
@@ -123,7 +174,12 @@
         "color_scheme",
         "mood_atmosphere"
       ],
-      "type": "OBJECT"
+      "type": "OBJECT",
+      "propertyOrdering": [
+        "composition",
+        "color_scheme",
+        "mood_atmosphere"
+      ]
     },
     "photographic_characteristics": {
       "nullable": true,
@@ -147,7 +203,13 @@
         "camera_angle",
         "lens_focal_length"
       ],
-      "type": "OBJECT"
+      "type": "OBJECT",
+      "propertyOrdering": [
+        "depth_of_field",
+        "focus",
+        "camera_angle",
+        "lens_focal_length"
+      ]
     },
     "style_medium": {
       "type": "STRING"
@@ -183,7 +245,15 @@
           "font",
           "appearance_details"
         ],
-        "type": "OBJECT"
+        "type": "OBJECT",
+        "propertyOrdering": [
+          "text",
+          "location",
+          "size",
+          "color",
+          "font",
+          "appearance_details"
+        ]
       },
       "type": "ARRAY"
     },
@@ -195,6 +265,7 @@
     }
   },
   "required": [
+    "image_type",
     "short_description",
     "objects",
     "background_setting",
@@ -206,5 +277,18 @@
     "context",
     "artistic_style"
   ],
-  "type": "OBJECT"
+  "type": "OBJECT",
+  "propertyOrdering": [
+    "image_type",
+    "short_description",
+    "objects",
+    "background_setting",
+    "lighting",
+    "aesthetics",
+    "photographic_characteristics",
+    "style_medium",
+    "text_render",
+    "context",
+    "artistic_style"
+  ]
 }

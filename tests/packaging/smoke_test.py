@@ -1,7 +1,7 @@
 """Live smoke test: every payload against real LLMs. The release gate; not part of the pytest run.
 
     uv run --group examples python tests/packaging/smoke_test.py               # AI Studio and Vertex
-    uv run --group examples python tests/packaging/smoke_test.py gemini/gemini-3.5-flash-lite
+    uv run --group examples python tests/packaging/smoke_test.py gemini/gemini-3.5-flash
 
 AI Studio needs GEMINI_API_KEY; Vertex needs VERTEXAI_PROJECT, VERTEXAI_LOCATION and GOOGLE_APPLICATION_CREDENTIALS.
 Exits non-zero if any call fails or returns an invalid VGL.
@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw
 import vgl
 from vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
 
-LLMS = ["gemini/gemini-3.5-flash-lite", "vertex_ai/gemini-3.5-flash-lite"]
+LLMS = ["gemini/gemini-3.5-flash", "vertex_ai/gemini-3.5-flash"]
 
 
 def _scene(background: str, shape: str) -> Image.Image:
