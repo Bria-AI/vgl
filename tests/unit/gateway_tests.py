@@ -527,6 +527,36 @@ class TestProviderSpecificParameters:
         # Assert
         assert "thinking_config" in sent["extra_body"] and "generationConfig" not in sent["extra_body"]
 
+    @staticmethod
+    def _sent_thinking(monkeypatch, model_name):
+        captured = {}
+        monkeypatch.setattr(litellm, "completion", lambda **kwargs: captured.update(kwargs) or _StubResponse())
+        gateway.call(model_name=model_name, system_prompt="s", user_prompt="u", thinking_level="high")
+        return captured
+
+    def test_a_thinking_level_on_vertex_should_replace_the_zero_budget(self, monkeypatch):
+        """Gemini 3 rejects a thinking budget alongside a thinking level."""
+        # Act
+        sent = self._sent_thinking(monkeypatch, _GEMINI)
+
+        # Assert
+        assert sent["extra_body"]["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "high"}
+
+    def test_a_thinking_level_outside_vertex_should_go_as_reasoning_effort(self, monkeypatch):
+        """litellm maps it to thinkingLevel; a thinking_config with a zero budget would conflict."""
+        # Act
+        sent = self._sent_thinking(monkeypatch, "gemini/gemini-3.5-flash")
+
+        # Assert
+        assert sent["reasoning_effort"] == "high" and "extra_body" not in sent
+
+    def test_a_thinking_level_should_not_reach_a_non_gemini_model(self, monkeypatch):
+        # Act
+        sent = self._sent_thinking(monkeypatch, "anthropic/claude-sonnet-4-5")
+
+        # Assert
+        assert "reasoning_effort" not in sent and "extra_body" not in sent
+
 
 @pytest.mark.unit
 class TestSeedSupport:
@@ -655,6 +685,17 @@ class TestOutputSchemaDialect:
         # Assert
         assert standard["properties"]["count"]["type"] == ["integer", "null"]
         assert "nullable" not in standard["properties"]["count"]
+
+    def test_property_ordering_should_be_dropped(self):
+        """Gemini-only; a strict validator rejects the unknown keyword."""
+        # Arrange
+        schema = {**self._GEMINI_DIALECT, "propertyOrdering": ["name", "count", "tags"]}
+
+        # Act
+        standard = _to_standard_json_schema(schema)
+
+        # Assert
+        assert "propertyOrdering" not in standard
 
     def test_every_object_should_gain_additional_properties_false(self):
         """Bedrock's structured output is strict and rejects an object without it."""

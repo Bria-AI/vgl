@@ -7,6 +7,7 @@ from PIL import Image
 from pydantic import ValidationError
 
 from vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
+from vgl.dialects.thales.payloads import frame_sentence
 from vgl.exceptions import InvalidResponseError
 from vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
@@ -26,9 +27,15 @@ def _prompt_name(payload) -> str:
 
 @pytest.mark.unit
 class TestPromptChoice:
-    def test_generate_should_use_the_generate_prompt_at_a_creative_temperature(self):
+    def test_generate_should_use_the_generate_prompt(self):
+        assert _prompt_name(Generate(prompt="a fox")) == "generate"
+
+    def test_generate_should_think_hard_at_a_low_temperature(self):
         request = Generate(prompt="a fox").to_request()
-        assert (request.prompts.name, request.temperature) == ("generate", 0.7)
+        assert (request.temperature, request.thinking_level, request.max_output_tokens) == (0.2, "high", 32768)
+
+    def test_edits_should_keep_thinking_off(self, an_image):
+        assert EditImages(prompt="p", images=[an_image]).to_request().thinking_level is None
 
     def test_one_image_should_use_the_single_image_edit(self, an_image):
         assert _prompt_name(EditImages(prompt="p", images=[an_image])) == "edit_image"
@@ -112,6 +119,16 @@ class TestValidation:
         with pytest.raises(ValidationError):
             EditImages(prompt="p", images=[an_image], original_vgl=a_vgl)  # type: ignore[call-arg]
 
+    @pytest.mark.parametrize("size", [{"width": 1024}, {"height": 1024}])
+    def test_one_side_of_the_frame_should_be_rejected(self, size):
+        with pytest.raises(ValidationError, match="both width and height"):
+            Generate(prompt="p", **size)
+
+    @pytest.mark.parametrize("size", [{"width": 0, "height": 1024}, {"width": 1024, "height": -1}])
+    def test_a_non_positive_side_should_be_rejected(self, size):
+        with pytest.raises(ValidationError):
+            Generate(prompt="p", **size)
+
 
 @pytest.mark.unit
 class TestResponseSchema:
@@ -121,6 +138,11 @@ class TestResponseSchema:
     def test_edits_should_require_edit_instruction(self, an_image):
         schema = EditImages(prompt="p", images=[an_image]).to_request().response_schema
         assert "edit_instruction" in schema["required"]
+
+    def test_generate_should_decide_the_kind_of_image_before_anything_else(self):
+        """The model writes keys in this order, so the decision has to come first to steer the rest."""
+        schema = Generate(prompt="p").to_request().response_schema
+        assert schema["propertyOrdering"][0] == "image_type" and "image_type" in schema["required"]
 
     @pytest.mark.parametrize("payload", ["generate", "edit"])
     def test_the_schema_should_have_no_scores(self, payload, an_image):
@@ -140,7 +162,40 @@ class TestParse:
         vgl = Generate(prompt="p").parse(json.dumps(a_vgl_dict))
         assert "aesthetic_score" not in vgl.aesthetics.model_dump()
 
+    def test_the_image_type_decision_should_not_reach_the_vgl(self, a_vgl_dict):
+        # Arrange
+        reply = json.dumps({"image_type": {"branch": "photograph", "medium_and_style": "digital photo", "reason": "a scene"}, **a_vgl_dict})
+
+        # Act
+        vgl = Generate(prompt="p").parse(reply)
+
+        # Assert
+        assert "image_type" not in vgl.model_dump()
+
     @pytest.mark.parametrize("reply", ["not json", "[]", '{"short_description": "only this"}'])
     def test_an_invalid_reply_should_raise(self, reply):
         with pytest.raises(InvalidResponseError):
             Generate(prompt="p").parse(reply)
+
+
+@pytest.mark.unit
+class TestFrame:
+    @pytest.mark.parametrize(
+        ("width", "height", "expected"),
+        [
+            (1344, 768, "The image will be generated in a landscape frame, aspect ratio about 16:9 (width / height = 1.75)."),
+            (1024, 1024, "The image will be generated in a square frame, aspect ratio about 1:1 (width / height = 1.00)."),
+            (768, 1344, "The image will be generated in a portrait frame, aspect ratio about 9:16 (width / height = 0.57)."),
+            (2048, 1024, "The image will be generated in a panoramic frame, aspect ratio about 2:1 (width / height = 2.00)."),
+            (512, 1536, "The image will be generated in a tall vertical frame, aspect ratio about 1:3 (width / height = 0.33)."),
+        ],
+    )
+    def test_frame_sentence_should_name_the_orientation_and_nearest_common_ratio(self, width, height, expected):
+        assert frame_sentence(width, height) == expected
+
+    def test_a_frame_should_follow_the_request_in_the_final_prompt(self):
+        context = Generate(prompt="a fox", width=1344, height=768).to_request().context
+        assert context["frame_sentence"] == f" {frame_sentence(1344, 768)}"
+
+    def test_no_frame_should_add_nothing(self):
+        assert Generate(prompt="a fox").to_request().context["frame_sentence"] == ""

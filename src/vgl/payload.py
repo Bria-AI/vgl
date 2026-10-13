@@ -26,6 +26,10 @@ class Request:
     response_schema: dict
     images: Sequence[Image.Image] = field(default_factory=tuple)
     temperature: float = 0.2
+    #: Gemini's thinking level ("low", "high", ...). None keeps thinking off.
+    thinking_level: str | None = None
+    #: Thinking tokens count against this on Gemini.
+    max_output_tokens: int = 7000
 
 
 def _is_filled(_path, _key, value) -> bool:
@@ -41,6 +45,8 @@ class Payload(BaseModel, Generic[T]):
     creates: ClassVar[bool] = False
     #: The dialect's VGL model, which ``parse`` validates against.
     vgl_model: ClassVar[type[VGL]]
+    #: Keys the response schema asks for only so the model plans with them; dropped before validation.
+    planning_keys: ClassVar[frozenset[str]] = frozenset()
 
     prompt: str = Field(min_length=1)
 
@@ -48,9 +54,12 @@ class Payload(BaseModel, Generic[T]):
         raise NotImplementedError
 
     def parse(self, text: str) -> T:
-        """Drop empty values the model returned, then validate."""
+        """Drop planning keys and empty values the model returned, then validate."""
         try:
-            return self.vgl_model.model_validate(remap(json.loads(text), visit=_is_filled))  # type: ignore[return-value]
+            reply = json.loads(text)
+            if isinstance(reply, dict):
+                reply = {key: value for key, value in reply.items() if key not in self.planning_keys}
+            return self.vgl_model.model_validate(remap(reply, visit=_is_filled))  # type: ignore[return-value]
         except (json.JSONDecodeError, TypeError, ValidationError) as invalid:
             raise InvalidResponseError(f"reply isn't a valid {self.vgl_model.__name__}: {invalid}") from invalid
 

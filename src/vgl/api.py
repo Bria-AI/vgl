@@ -47,6 +47,8 @@ def _run(payload: Payload[T], *, llm: str, seed: int | None, style_preset: str |
             seed=seed,
             response_schema=request.response_schema,
             temperature=request.temperature,
+            thinking_level=request.thinking_level,
+            max_output_tokens=request.max_output_tokens,
         )
     except LiteLLMAuthenticationError as error:
         raise AuthenticationError(str(error)) from error

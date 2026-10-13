@@ -22,6 +22,7 @@ _VGL = ThalesVGL.model_validate(
 
 PAYLOADS = [
     Generate(prompt="a fox"),
+    Generate(prompt="a fox", width=1344, height=768),
     EditImages(prompt="make it night", images=[_IMAGE]),
     EditImages(prompt="put <image_2> on <image_1>", images=[_IMAGE, _IMAGE]),
     EditImageWithMask(prompt="a cat", image=_IMAGE, mask=_MASK),

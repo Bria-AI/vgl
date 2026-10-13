@@ -67,7 +67,8 @@ def _to_standard_json_schema(node: Any) -> Any:
 
     converted = {}
     for key, value in node.items():
-        if key == "nullable":
+        # propertyOrdering is Gemini-only, and strict validators reject unknown keywords.
+        if key in ("nullable", "propertyOrdering"):
             continue
         if key == "type" and isinstance(value, str):
             converted[key] = _JSON_SCHEMA_TYPES.get(value.upper(), value.lower())
@@ -119,10 +120,14 @@ def call(
     max_output_tokens: int = 7000,
     top_p: float = 1.0,
     labels: dict[str, str] | None = None,
+    thinking_level: str | None = None,
 ) -> str:
-    """One completion, retried and then moved to the Gemini fallback. Returns the reply text."""
+    """One completion, retried and then moved to the Gemini fallback. Returns the reply text.
+
+    ``thinking_level`` applies to Gemini only; None keeps its thinking off.
+    """
     messages = _messages(system_prompt, user_prompt, images)
-    params = _params(model_name, temperature, top_p, seed, max_output_tokens, response_schema, labels or {})
+    params = _params(model_name, temperature, top_p, seed, max_output_tokens, response_schema, labels or {}, thinking_level)
     try:
         response = _complete_with_retries(model_name, messages, params)
     except FALLBACK_ERRORS:
@@ -144,7 +149,14 @@ def _messages(system_prompt: str, user_prompt: str, images: Sequence[Image.Image
 
 
 def _params(
-    model_name: str, temperature: float, top_p: float, seed: int | None, max_output_tokens: int, response_schema: dict | None, labels: dict[str, str]
+    model_name: str,
+    temperature: float,
+    top_p: float,
+    seed: int | None,
+    max_output_tokens: int,
+    response_schema: dict | None,
+    labels: dict[str, str],
+    thinking_level: str | None = None,
 ) -> dict[str, Any]:
     """litellm.completion's arguments besides the model and messages."""
     if seed is not None and not _supports_seed(model_name):
@@ -164,13 +176,18 @@ def _params(
 
     params["metadata"] = {"billing_category": "production"}
     if "vertex_ai" not in lowered:
-        params["extra_body"] = {"thinking_config": {"include_thoughts": True, "thinking_budget": 0}}
+        if thinking_level:
+            # litellm maps this to Gemini 3's thinkingLevel.
+            params["reasoning_effort"] = thinking_level
+        else:
+            params["extra_body"] = {"thinking_config": {"include_thoughts": True, "thinking_budget": 0}}
         if response_schema:
             params["response_format"] = {"type": "json_object", "response_schema": response_schema}
         return params
 
     # Not via response_format on Vertex: litellm turns that into responseJsonSchema, which samples differently.
-    generation_config: dict[str, Any] = {"thinkingConfig": {"thinkingBudget": 0}}
+    thinking_config = {"thinkingLevel": thinking_level} if thinking_level else {"thinkingBudget": 0}
+    generation_config: dict[str, Any] = {"thinkingConfig": thinking_config}
     if response_schema:
         generation_config |= {"responseMimeType": "application/json", "responseSchema": response_schema}
     params["extra_body"] = {"generationConfig": generation_config}
