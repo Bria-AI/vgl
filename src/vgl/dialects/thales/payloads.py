@@ -32,52 +32,15 @@ class ThalesPayload(Payload[ThalesVGL]):
     vgl_model: ClassVar = ThalesVGL
 
 
-#: Common ratios, so a frame reads "about 16:9" rather than "89:50".
-_NAMED_RATIOS = ((3, 1), (5, 2), (2, 1), (16, 9), (3, 2), (4, 3), (5, 4), (1, 1), (4, 5), (3, 4), (2, 3), (9, 16), (1, 2), (2, 5), (1, 3))
-
-
-def frame_sentence(width: int, height: int) -> str:
-    """How the generate prompt tells the model the shape of the image it plans."""
-    ratio = width / height
-    if ratio >= 1.99:
-        orientation = "panoramic"
-    elif ratio > 1.05:
-        orientation = "landscape"
-    elif ratio >= 0.95:
-        orientation = "square"
-    elif ratio > 0.51:
-        orientation = "portrait"
-    else:
-        orientation = "tall vertical"
-    a, b = min(_NAMED_RATIOS, key=lambda named: abs(named[0] / named[1] - ratio))
-    return f"The image will be generated in a {orientation} frame, aspect ratio about {a}:{b} (width / height = {ratio:.2f})."
-
-
 class Generate(ThalesPayload):
-    """A new VGL from a prompt.
-
-    Pass ``width`` and ``height`` of the image to be generated, so the layout is planned for that frame.
-    """
+    """A new VGL from a prompt."""
 
     creates: ClassVar[bool] = True
-    #: The model first decides photograph, art or design; that decision is not part of the VGL.
-    planning_keys: ClassVar[frozenset[str]] = frozenset({"image_type"})
-
-    width: int | None = Field(None, gt=0)
-    height: int | None = Field(None, gt=0)
-
-    @model_validator(mode="after")
-    def _both_sides_or_neither(self) -> "Generate":
-        if (self.width is None) != (self.height is None):
-            raise ValueError("pass both width and height, or neither")
-        return self
 
     def to_request(self) -> Request:
-        # A leading space, so no frame leaves the final prompt exactly as it was.
-        frame = f" {frame_sentence(self.width, self.height)}" if self.width and self.height else ""
         return Request(
             prompts=_PROMPTS / "generate",
-            context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("generate"), "frame_sentence": frame},
+            context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("generate")},
             response_schema=_output_schema("generate"),
             temperature=0.2,
             thinking_level="high",

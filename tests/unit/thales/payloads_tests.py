@@ -7,7 +7,6 @@ from PIL import Image
 from pydantic import ValidationError
 
 from vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
-from vgl.dialects.thales.payloads import frame_sentence
 from vgl.exceptions import InvalidResponseError
 from vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
@@ -119,16 +118,6 @@ class TestValidation:
         with pytest.raises(ValidationError):
             EditImages(prompt="p", images=[an_image], original_vgl=a_vgl)  # type: ignore[call-arg]
 
-    @pytest.mark.parametrize("size", [{"width": 1024}, {"height": 1024}])
-    def test_one_side_of_the_frame_should_be_rejected(self, size):
-        with pytest.raises(ValidationError, match="both width and height"):
-            Generate(prompt="p", **size)
-
-    @pytest.mark.parametrize("size", [{"width": 0, "height": 1024}, {"width": 1024, "height": -1}])
-    def test_a_non_positive_side_should_be_rejected(self, size):
-        with pytest.raises(ValidationError):
-            Generate(prompt="p", **size)
-
 
 @pytest.mark.unit
 class TestResponseSchema:
@@ -176,26 +165,3 @@ class TestParse:
     def test_an_invalid_reply_should_raise(self, reply):
         with pytest.raises(InvalidResponseError):
             Generate(prompt="p").parse(reply)
-
-
-@pytest.mark.unit
-class TestFrame:
-    @pytest.mark.parametrize(
-        ("width", "height", "expected"),
-        [
-            (1344, 768, "The image will be generated in a landscape frame, aspect ratio about 16:9 (width / height = 1.75)."),
-            (1024, 1024, "The image will be generated in a square frame, aspect ratio about 1:1 (width / height = 1.00)."),
-            (768, 1344, "The image will be generated in a portrait frame, aspect ratio about 9:16 (width / height = 0.57)."),
-            (2048, 1024, "The image will be generated in a panoramic frame, aspect ratio about 2:1 (width / height = 2.00)."),
-            (512, 1536, "The image will be generated in a tall vertical frame, aspect ratio about 1:3 (width / height = 0.33)."),
-        ],
-    )
-    def test_frame_sentence_should_name_the_orientation_and_nearest_common_ratio(self, width, height, expected):
-        assert frame_sentence(width, height) == expected
-
-    def test_a_frame_should_follow_the_request_in_the_final_prompt(self):
-        context = Generate(prompt="a fox", width=1344, height=768).to_request().context
-        assert context["frame_sentence"] == f" {frame_sentence(1344, 768)}"
-
-    def test_no_frame_should_add_nothing(self):
-        assert Generate(prompt="a fox").to_request().context["frame_sentence"] == ""
