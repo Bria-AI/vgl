@@ -376,14 +376,31 @@ class TestProviderSpecificParameters:
 
     _SCHEMA = {"type": "object", "properties": {"a": {"type": "string"}}, "required": ["a"]}
 
-    def test_gemini_on_vertex_should_get_the_schema_in_generation_config(self, monkeypatch):
-        """The decoding path the bundled prompts were tuned against."""
+    @pytest.mark.parametrize("model_name", [_GEMINI, "gemini/gemini-2.5-flash"])
+    def test_gemini_should_get_the_schema_in_generation_config(self, monkeypatch, model_name):
+        """The decoding path the bundled prompts were tuned against, on Vertex and AI Studio alike."""
         # Act
-        sent = self._sent(monkeypatch, _GEMINI, self._SCHEMA)
+        sent = self._sent(monkeypatch, model_name, self._SCHEMA)
 
         # Assert
         assert sent["extra_body"]["generationConfig"]["responseSchema"] == self._SCHEMA
         assert sent.get("response_format") is None
+
+    @pytest.mark.parametrize(
+        ("model_name", "thinking"),
+        [
+            (_GEMINI, {"thinkingBudget": 0}),
+            ("gemini/gemini-3.5-flash-lite", {"thinkingLevel": "minimal"}),
+            ("gemini/gemini-2.5-flash", {"thinkingBudget": 0}),
+        ],
+    )
+    def test_gemini_should_get_thinking_off_in_a_form_its_provider_accepts(self, monkeypatch, model_name, thinking):
+        """AI Studio rejects a zero thinking budget on Gemini 3+; Vertex accepts it."""
+        # Act
+        sent = self._sent(monkeypatch, model_name, self._SCHEMA)
+
+        # Assert
+        assert sent["extra_body"]["generationConfig"]["thinkingConfig"] == thinking
 
     @pytest.mark.parametrize("model_name", ["vertex_ai/claude-sonnet-4-5", "anthropic/claude-sonnet-4-5"])
     def test_claude_should_get_the_schema_as_a_response_format(self, monkeypatch, model_name):
@@ -519,13 +536,6 @@ class TestProviderSpecificParameters:
 
         # Assert
         assert "labels" not in sent
-
-    def test_gemini_outside_vertex_should_get_thinking_config_but_no_generation_config(self, monkeypatch):
-        # Act
-        sent = self._sent(monkeypatch, "gemini/gemini-2.5-flash", self._SCHEMA)
-
-        # Assert
-        assert "thinking_config" in sent["extra_body"] and "generationConfig" not in sent["extra_body"]
 
 
 @pytest.mark.unit

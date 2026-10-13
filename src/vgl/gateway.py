@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import re
 import time
 from collections.abc import Sequence
 from functools import cache
@@ -93,6 +94,14 @@ def _is_anthropic(model_name: str) -> bool:
     return "anthropic" in lowered or "claude" in lowered
 
 
+def _thinking_off(model_name: str) -> dict[str, Any]:
+    """Thinking as low as it goes. AI Studio rejects a zero budget on Gemini 3+, so it gets the minimal level instead."""
+    version = re.search(r"gemini-(\d+)", model_name.lower())
+    if "vertex_ai" not in model_name.lower() and version and int(version.group(1)) >= 3:
+        return {"thinkingLevel": "minimal"}
+    return {"thinkingBudget": 0}
+
+
 @cache
 def _supports_seed(model_name: str) -> bool:
     """Whether the provider accepts ``seed``. Unknown models are assumed to, as before.
@@ -163,18 +172,13 @@ def _params(
         return params
 
     params["metadata"] = {"billing_category": "production"}
-    if "vertex_ai" not in lowered:
-        params["extra_body"] = {"thinking_config": {"include_thoughts": True, "thinking_budget": 0}}
-        if response_schema:
-            params["response_format"] = {"type": "json_object", "response_schema": response_schema}
-        return params
-
-    # Not via response_format on Vertex: litellm turns that into responseJsonSchema, which samples differently.
-    generation_config: dict[str, Any] = {"thinkingConfig": {"thinkingBudget": 0}}
+    # Same on AI Studio and Vertex. Not via response_format: litellm turns that into responseJsonSchema, which samples differently.
+    generation_config: dict[str, Any] = {"thinkingConfig": _thinking_off(model_name)}
     if response_schema:
         generation_config |= {"responseMimeType": "application/json", "responseSchema": response_schema}
     params["extra_body"] = {"generationConfig": generation_config}
-    params["labels"] = _vertex_labels(labels)
+    if "vertex_ai" in lowered:
+        params["labels"] = _vertex_labels(labels)
     return params
 
 
