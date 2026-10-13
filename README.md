@@ -73,7 +73,7 @@ image = ...  # generate the image from `scene` with FIBO
 night = vgl.modify(EditImages(prompt="make it night", images=[image], input_image_vgl=scene))
 ```
 
-Runnable versions are in [`examples/`](examples/).
+Runnable versions are in [`examples/`](https://github.com/Bria-AI/vgl/tree/dev/examples).
 
 ## Options
 
@@ -108,5 +108,5 @@ A dialect is a small variant of VGL, with its own model, payloads, and prompts. 
 
 ## More
 
-- [Best practices](docs/best_practices.md): how images are prepared, masks, and getting consistent results.
-- [Contributing](CONTRIBUTING.md)
+- [Best practices](https://github.com/Bria-AI/vgl/blob/dev/docs/best_practices.md): how images are prepared, masks, and getting consistent results.
+- [Contributing](https://github.com/Bria-AI/vgl/blob/dev/CONTRIBUTING.md)
