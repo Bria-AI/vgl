@@ -139,7 +139,9 @@ def call(
         if fallback is None:
             raise
         logger.warning("Gemini model exhausted its attempts; moving to the fallback", extra={"model": model_name, "fallback": fallback})
-        response = _complete_with_retries(fallback, messages, params)
+        # Rebuilt, since the thinking format depends on the model.
+        fallback_params = _params(fallback, temperature, top_p, seed, max_output_tokens, response_schema, labels or {})
+        response = _complete_with_retries(fallback, messages, fallback_params)
 
     if response.choices[0].finish_reason == "length":
         raise MaxTokensError(f"Max tokens ({max_output_tokens}) reached for model {model_name}")

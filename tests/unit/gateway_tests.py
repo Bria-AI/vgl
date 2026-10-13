@@ -72,6 +72,25 @@ class TestGatewayCall:
         assert result == "ok"
         assert calls == [_GEMINI, _FALLBACK]
 
+    def test_call_on_fallback_should_send_thinking_off_in_the_fallback_models_form(self, monkeypatch):
+        """Gemini 2.x takes a zero budget; the Gemini 3+ fallback on AI Studio needs the minimal level."""
+        # Arrange
+        thinking = []
+
+        def fake(*, model, **kwargs):
+            thinking.append(kwargs["extra_body"]["generationConfig"]["thinkingConfig"])
+            if len(thinking) == 1:
+                raise _rate_limited()
+            return _StubResponse("ok")
+
+        monkeypatch.setattr(litellm, "completion", fake)
+
+        # Act
+        gateway.call(model_name="gemini/gemini-2.5-flash", system_prompt="s", user_prompt="u")
+
+        # Assert
+        assert thinking == [{"thinkingBudget": 0}, {"thinkingLevel": "minimal"}]
+
     def test_call_on_non_gemini_rate_limit_should_propagate_without_retrying(self, monkeypatch):
         # Arrange
         calls = self._patch_completion(monkeypatch, [_rate_limited()])
