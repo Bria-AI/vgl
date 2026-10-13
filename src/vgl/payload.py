@@ -55,7 +55,7 @@ class Payload(BaseModel, Generic[T]):
         raise NotImplementedError
 
     def parse(self, text: str) -> T:
-        """Drop empty values the model returned, then validate."""
+        """Drop empty values the model returned, then validate. Fields outside ``vgl_model`` are dropped."""
         try:
             return self.vgl_model.model_validate(remap(json.loads(text), visit=_is_filled))  # type: ignore[return-value]
         except (json.JSONDecodeError, TypeError, ValidationError) as invalid:
