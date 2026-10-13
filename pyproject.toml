@@ -1,5 +1,5 @@
 [project]
-name = "vgl"
+name = "bria-vgl"
 version = "0.1.0"
 description = "Turn a prompt, or images plus a prompt, into a structured JSON scene description (VGL) for image models like FIBO."
 readme = "README.md"
@@ -64,7 +64,7 @@ vertex = ["google-auth>=2.0"]
 bedrock = ["boto3>=1.34"]
 
 # Every optional dependency, for a consumer that does not want to track which provider needs what.
-all = ["vgl[vertex]", "vgl[bedrock]"]
+all = ["bria-vgl[vertex]", "bria-vgl[bedrock]"]
 
 # Local development only — PEP 735 groups are not published in the wheel, which is why the
 # Vertex dependency above is an extra instead: a consumer has to be able to install it.

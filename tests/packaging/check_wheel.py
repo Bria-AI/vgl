@@ -1,6 +1,6 @@
 """Fail if a built wheel is missing any of vgl's data files (prompts, schemas, py.typed).
 
-uv build --wheel && python tests/packaging/check_wheel.py dist/vgl-*.whl
+uv build --wheel && python tests/packaging/check_wheel.py dist/bria_vgl-*.whl
 """
 
 import subprocess

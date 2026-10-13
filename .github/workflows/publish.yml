@@ -13,11 +13,8 @@ jobs:
     environment:
       name: release
     permissions:
-      id-token: write
-      contents: write
-    defaults:
-      run:
-        working-directory: python
+      id-token: write   # OIDC token for PyPI trusted publishing
+      contents: write   # attach the wheel to the GitHub release
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,11 +25,9 @@ jobs:
       - name: Build package
         run: uv build
       - name: Publish to PyPI
-        env:
-          UV_PUBLISH_USERNAME: __token__
-          UV_PUBLISH_PASSWORD: ${{ secrets.PYPI_AUTH_TOKEN }}
-        run: uv publish
+        # No credentials: uv uses GitHub OIDC trusted publishing (configured on PyPI).
+        run: uv publish --trusted-publishing always
       - name: Upload wheel to release
         uses: softprops/action-gh-release@v2
         with:
-          files: python/dist/*.whl
+          files: dist/*.whl

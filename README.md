@@ -5,14 +5,14 @@ VGL turns a text prompt, or images plus a prompt, into a structured JSON descrip
 ## Install
 
 ```bash
-pip install vgl
+pip install bria-vgl
 ```
 
 The default LLM is Gemini through Google AI Studio. For other providers, install the extra:
 
 ```bash
-pip install 'vgl[vertex]'     # Gemini on Vertex AI
-pip install 'vgl[bedrock]'    # Claude on AWS Bedrock
+pip install 'bria-vgl[vertex]'     # Gemini on Vertex AI
+pip install 'bria-vgl[bedrock]'    # Claude on AWS Bedrock
 ```
 
 ## Authenticate
