@@ -86,7 +86,7 @@ One artifact ships from this repo: the **`vgl` package → PyPI, via release-ple
   access; add required reviewers to the `release-gate` environment to limit it to specific people.
 
 `ci.yml` is a self-contained Python CI (no shared/reusable workflow) that runs on every PR and on
-push to `main`: `format` / `lint` / `typecheck` / `security` (gitleaks + trivy), then a test matrix
+push to `dev`: `format` / `lint` / `typecheck` / `security` (gitleaks + trivy), then a test matrix
 (Python 3.10–3.14 × ubuntu/macOS).
 
 See `CONTRIBUTING.md` for the source layout and the human-facing version of the above, and
