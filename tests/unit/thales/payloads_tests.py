@@ -140,6 +140,16 @@ class TestParse:
         vgl = Generate(prompt="p").parse(json.dumps(a_vgl_dict))
         assert "aesthetic_score" not in vgl.aesthetics.model_dump()
 
+    def test_fields_outside_the_model_should_be_dropped(self, a_vgl_dict):
+        # Arrange
+        reply = json.dumps({**a_vgl_dict, "image_type": {"branch": "photo", "reason": "r"}, "lighting": {**a_vgl_dict["lighting"], "mood": "x"}})
+
+        # Act
+        dumped = Generate(prompt="p").parse(reply).model_dump()
+
+        # Assert
+        assert "image_type" not in dumped and "mood" not in dumped["lighting"]
+
     @pytest.mark.parametrize("reply", ["not json", "[]", '{"short_description": "only this"}'])
     def test_an_invalid_reply_should_raise(self, reply):
         with pytest.raises(InvalidResponseError):
