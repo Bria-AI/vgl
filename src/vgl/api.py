@@ -10,7 +10,7 @@ from vgl.payload import Payload, T
 from vgl.prompting import render_prompts
 from vgl.utils.vertex import validate_vertex_env
 
-DEFAULT_LLM = "gemini/gemini-3.5-flash-lite"
+DEFAULT_LLM = "gemini/gemini-3.5-flash"
 
 
 def create(payload: Payload[T], *, llm: str = DEFAULT_LLM, style_preset_prompt: str | None = None, seed: int | None = None) -> T:

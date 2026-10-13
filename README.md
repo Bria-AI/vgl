@@ -19,8 +19,8 @@ pip install 'vgl[bedrock]'    # Claude on AWS Bedrock
 
 | Provider | `llm=` | Set |
 |---|---|---|
-| Google AI Studio (default) | `gemini/gemini-3.5-flash-lite` | `GEMINI_API_KEY` ([get one](https://aistudio.google.com/apikey)) |
-| Vertex AI | `vertex_ai/gemini-3.5-flash-lite` | `VERTEXAI_PROJECT`, `VERTEXAI_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS` (a service account JSON) |
+| Google AI Studio (default) | `gemini/gemini-3.5-flash` | `GEMINI_API_KEY` ([get one](https://aistudio.google.com/apikey)) |
+| Vertex AI | `vertex_ai/gemini-3.5-flash` | `VERTEXAI_PROJECT`, `VERTEXAI_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS` (a service account JSON) |
 | AWS Bedrock | e.g. `bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0` | the usual AWS credentials and `AWS_REGION_NAME` |
 
 `llm` takes any [litellm model id](https://docs.litellm.ai/docs/providers), but the prompts are tuned for Gemini.
@@ -78,7 +78,7 @@ Runnable versions are in [`examples/`](https://github.com/Bria-AI/vgl/tree/dev/e
 ## Options
 
 ```python
-vgl.create(payload, llm="vertex_ai/gemini-3.5-flash-lite", seed=7, style_preset_prompt="Muted film colours, soft grain.")
+vgl.create(payload, llm="vertex_ai/gemini-3.5-flash", seed=7, style_preset_prompt="Muted film colours, soft grain.")
 vgl.modify(payload, llm=..., seed=...)
 ```
 
