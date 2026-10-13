@@ -44,6 +44,42 @@ class TestCreate:
         vgl.create(Generate(prompt="a fox"), style_preset_prompt="Muted film colours.")
         assert BLOCK_PREAMBLE in sent[0]["system_prompt"] and "Muted film colours." in sent[0]["system_prompt"]
 
+    def test_overrides_should_replace_the_payloads_defaults(self, sent):
+        # Arrange
+        schema = {"type": "OBJECT", "properties": {"image_type": {"type": "STRING"}}}
+
+        # Act
+        vgl.create(
+            Generate(prompt="a fox"),
+            system_prompt="Describe it. Fields: {llm_input_schema}",
+            input_schema="1. `short_description`",
+            response_schema=schema,
+            thinking_level="high",
+            temperature=0.2,
+            max_output_tokens=32768,
+        )
+
+        # Assert
+        call = sent[0]
+        assert call["system_prompt"] == "Describe it. Fields: 1. `short_description`"
+        assert (call["response_schema"], call["thinking_level"], call["temperature"], call["max_output_tokens"]) == (schema, "high", 0.2, 32768)
+
+    def test_without_overrides_should_send_the_payloads_defaults(self, sent):
+        # Arrange
+        request = Generate(prompt="a fox").to_request()
+
+        # Act
+        vgl.create(Generate(prompt="a fox"))
+
+        # Assert
+        call = sent[0]
+        assert (call["response_schema"], call["thinking_level"], call["temperature"], call["max_output_tokens"]) == (request.response_schema, None, 0.7, 7000)
+        assert "{llm_input_schema}" not in call["system_prompt"] and "short_description" in call["system_prompt"]
+
+    def test_a_custom_system_prompt_should_still_take_a_style_preset(self, sent):
+        vgl.create(Generate(prompt="a fox"), system_prompt="Describe it.", style_preset_prompt="Muted film colours.")
+        assert sent[0]["system_prompt"].startswith("Describe it.") and "Muted film colours." in sent[0]["system_prompt"]
+
     def test_should_reject_an_edit_payload(self, an_image):
         with pytest.raises(TypeError, match="vgl.modify"):
             vgl.create(EditImages(prompt="p", images=[an_image]))  # type: ignore[arg-type]
@@ -66,6 +102,10 @@ class TestModify:
     def test_should_reject_a_create_payload(self):
         with pytest.raises(TypeError, match="vgl.create"):
             vgl.modify(Generate(prompt="p"))
+
+    def test_should_not_take_the_create_overrides(self, an_image):
+        with pytest.raises(TypeError):
+            vgl.modify(EditImages(prompt="p", images=[an_image]), system_prompt="x")  # type: ignore[call-arg]
 
 
 @pytest.mark.unit

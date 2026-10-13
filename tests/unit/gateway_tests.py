@@ -91,6 +91,24 @@ class TestGatewayCall:
         # Assert
         assert thinking == [{"thinkingBudget": 0}, {"thinkingLevel": "minimal"}]
 
+    def test_call_on_fallback_should_keep_the_thinking_level(self, monkeypatch):
+        # Arrange
+        thinking = []
+
+        def fake(*, model, **kwargs):
+            thinking.append(kwargs["extra_body"]["generationConfig"]["thinkingConfig"])
+            if len(thinking) == 1:
+                raise _rate_limited()
+            return _StubResponse("ok")
+
+        monkeypatch.setattr(litellm, "completion", fake)
+
+        # Act
+        gateway.call(model_name="gemini/gemini-3.5-flash", system_prompt="s", user_prompt="u", thinking_level="high")
+
+        # Assert
+        assert thinking == [{"thinkingLevel": "high"}, {"thinkingLevel": "high"}]
+
     def test_call_on_non_gemini_rate_limit_should_propagate_without_retrying(self, monkeypatch):
         # Arrange
         calls = self._patch_completion(monkeypatch, [_rate_limited()])
@@ -382,7 +400,7 @@ class TestProviderSpecificParameters:
     """
 
     @staticmethod
-    def _sent(monkeypatch, model_name, response_schema=None):
+    def _sent(monkeypatch, model_name, response_schema=None, **call_kwargs):
         captured = {}
 
         def fake(**kwargs):
@@ -390,7 +408,7 @@ class TestProviderSpecificParameters:
             return _StubResponse()
 
         monkeypatch.setattr(litellm, "completion", fake)
-        gateway.call(model_name=model_name, system_prompt="s", user_prompt="u", response_schema=response_schema)
+        gateway.call(model_name=model_name, system_prompt="s", user_prompt="u", response_schema=response_schema, **call_kwargs)
         return captured
 
     _SCHEMA = {"type": "object", "properties": {"a": {"type": "string"}}, "required": ["a"]}
@@ -420,6 +438,21 @@ class TestProviderSpecificParameters:
 
         # Assert
         assert sent["extra_body"]["generationConfig"]["thinkingConfig"] == thinking
+
+    @pytest.mark.parametrize("model_name", ["vertex_ai/gemini-3.5-flash", "gemini/gemini-3.5-flash"])
+    def test_a_thinking_level_should_replace_thinking_off(self, monkeypatch, model_name):
+        # Act
+        sent = self._sent(monkeypatch, model_name, thinking_level="high")
+
+        # Assert
+        assert sent["extra_body"]["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "high"}
+
+    def test_a_thinking_level_should_not_reach_a_non_gemini_model(self, monkeypatch):
+        # Act
+        sent = self._sent(monkeypatch, "anthropic/claude-sonnet-4-5", thinking_level="high")
+
+        # Assert
+        assert "extra_body" not in sent and "reasoning_effort" not in sent
 
     @pytest.mark.parametrize("model_name", ["vertex_ai/claude-sonnet-4-5", "anthropic/claude-sonnet-4-5"])
     def test_claude_should_get_the_schema_as_a_response_format(self, monkeypatch, model_name):

@@ -5,7 +5,7 @@ import re
 import time
 from collections.abc import Sequence
 from functools import cache
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import litellm
 from litellm.exceptions import APIConnectionError, InternalServerError, RateLimitError, ServiceUnavailableError, Timeout
@@ -27,6 +27,9 @@ RETRYABLE_ERRORS = (InternalServerError, ServiceUnavailableError, APIConnectionE
 #: A 429 is deliberately absent above: quota is per model and per minute, so retrying in place
 #: lands in the same exhausted window — it moves straight to the fallback model instead.
 FALLBACK_ERRORS = (RateLimitError, *RETRYABLE_ERRORS)
+
+#: Gemini 3's thinking levels.
+ThinkingLevel = Literal["minimal", "low", "medium", "high"]
 
 #: Attempts per model, applied to the primary and the fallback separately.
 MAX_ATTEMPTS = 3
@@ -128,10 +131,14 @@ def call(
     max_output_tokens: int = 7000,
     top_p: float = 1.0,
     labels: dict[str, str] | None = None,
+    thinking_level: ThinkingLevel | None = None,
 ) -> str:
-    """One completion, retried and then moved to the Gemini fallback. Returns the reply text."""
+    """One completion, retried and then moved to the Gemini fallback. Returns the reply text.
+
+    ``thinking_level`` applies to Gemini 3+ only; None keeps thinking off.
+    """
     messages = _messages(system_prompt, user_prompt, images)
-    params = _params(model_name, temperature, top_p, seed, max_output_tokens, response_schema, labels or {})
+    params = _params(model_name, temperature, top_p, seed, max_output_tokens, response_schema, labels or {}, thinking_level)
     try:
         response = _complete_with_retries(model_name, messages, params)
     except FALLBACK_ERRORS:
@@ -140,7 +147,7 @@ def call(
             raise
         logger.warning("Gemini model exhausted its attempts; moving to the fallback", extra={"model": model_name, "fallback": fallback})
         # Rebuilt, since the thinking format depends on the model.
-        fallback_params = _params(fallback, temperature, top_p, seed, max_output_tokens, response_schema, labels or {})
+        fallback_params = _params(fallback, temperature, top_p, seed, max_output_tokens, response_schema, labels or {}, thinking_level)
         response = _complete_with_retries(fallback, messages, fallback_params)
 
     if response.choices[0].finish_reason == "length":
@@ -155,7 +162,14 @@ def _messages(system_prompt: str, user_prompt: str, images: Sequence[Image.Image
 
 
 def _params(
-    model_name: str, temperature: float, top_p: float, seed: int | None, max_output_tokens: int, response_schema: dict | None, labels: dict[str, str]
+    model_name: str,
+    temperature: float,
+    top_p: float,
+    seed: int | None,
+    max_output_tokens: int,
+    response_schema: dict | None,
+    labels: dict[str, str],
+    thinking_level: ThinkingLevel | None = None,
 ) -> dict[str, Any]:
     """litellm.completion's arguments besides the model and messages."""
     if seed is not None and not _supports_seed(model_name):
@@ -175,7 +189,8 @@ def _params(
 
     params["metadata"] = {"billing_category": "production"}
     # Same on AI Studio and Vertex. Not via response_format: litellm turns that into responseJsonSchema, which samples differently.
-    generation_config: dict[str, Any] = {"thinkingConfig": _thinking_off(model_name)}
+    thinking = {"thinkingLevel": thinking_level} if thinking_level else _thinking_off(model_name)
+    generation_config: dict[str, Any] = {"thinkingConfig": thinking}
     if response_schema:
         generation_config |= {"responseMimeType": "application/json", "responseSchema": response_schema}
     params["extra_body"] = {"generationConfig": generation_config}
