@@ -91,7 +91,7 @@ vgl.modify(payload, llm=..., seed=...)
 - `system_prompt`: replaces the system prompt. `{llm_input_schema}` and `{style_preset_block}` in it are still filled.
 - `input_schema`: the field guide filled into `{llm_input_schema}`.
 - `response_schema`: the JSON schema the model must follow, in Gemini's format. Extra keys in the reply are dropped from the VGL.
-- `thinking_level`: `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Thinking is off by default.
+- `thinking_level`: `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. By default thinking is as low as the model allows.
 - `temperature` and `max_output_tokens`: thinking tokens count against `max_output_tokens`, so raise it with a high thinking level.
 
 vgl logs under the `vgl` logger hierarchy (`vgl.gateway`, `vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
