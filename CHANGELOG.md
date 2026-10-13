@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/Bria-AI/vgl/compare/v0.1.0...v0.2.0) (2026-10-13)
+
+
+### Features
+
+* generation overrides on vgl.create ([#10](https://github.com/Bria-AI/vgl/issues/10)) ([817db48](https://github.com/Bria-AI/vgl/commit/817db4860d4e97b6c2dbba3cc5e28dae49788d79))
+
 ## 0.1.0 (2026-10-13)
 
 
