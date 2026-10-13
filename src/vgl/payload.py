@@ -12,6 +12,7 @@ from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from vgl.exceptions import InvalidResponseError
+from vgl.gateway import ThinkingLevel
 from vgl.model import VGL
 
 T = TypeVar("T", bound=VGL)
@@ -26,6 +27,12 @@ class Request:
     response_schema: dict
     images: Sequence[Image.Image] = field(default_factory=tuple)
     temperature: float = 0.2
+    #: Replaces the system prompt template in ``prompts``; its placeholders are still filled.
+    system_prompt: str | None = None
+    #: Gemini 3+ only. None keeps thinking off.
+    thinking_level: ThinkingLevel | str | None = None
+    #: Thinking tokens count against this on Gemini.
+    max_output_tokens: int = 7000
 
 
 def _is_filled(_path, _key, value) -> bool:

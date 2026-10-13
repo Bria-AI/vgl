@@ -15,7 +15,7 @@ from vgl.dialects import thales
 class TestPublicApi:
     def test_top_level_exports_exactly_the_core_verbs(self):
         # Arrange
-        expected = {"__version__", "DEFAULT_LLM", "create", "modify"}
+        expected = {"__version__", "DEFAULT_LLM", "ThinkingLevel", "create", "modify"}
 
         # Act / Assert
         assert set(vgl.__all__) == expected

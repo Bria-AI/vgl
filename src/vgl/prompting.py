@@ -71,11 +71,12 @@ def _read(directory: Path, name: str) -> str:
         raise PromptNotFoundError(f"no {name} in {directory}") from missing
 
 
-def render_prompts(directory: Path, context: Mapping[str, object], style_preset: str | None = None) -> tuple[str, str]:
-    """The system and final prompts in ``directory``, rendered with ``context``."""
+def render_prompts(directory: Path, context: Mapping[str, object], style_preset: str | None = None, system_template: str | None = None) -> tuple[str, str]:
+    """The system and final prompts in ``directory``, rendered with ``context``. ``system_template`` replaces the system prompt file."""
     # Supplied even with no preset, so a prompt that declares the slot never ships it.
     full_context = {STYLE_PRESET_KEY: "", **context}
-    system_template = _read(directory, SYSTEM_PROMPT_FILE)
+    if system_template is None:
+        system_template = _read(directory, SYSTEM_PROMPT_FILE)
 
     if style_preset is None:
         system_prompt, system_unfilled = render(system_template, full_context)

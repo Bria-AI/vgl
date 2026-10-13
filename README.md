@@ -85,6 +85,15 @@ vgl.modify(payload, llm=..., seed=...)
 - `llm`: the litellm model id; see [Authenticate](#authenticate).
 - `seed`: makes a call repeatable, on models that accept one.
 - `style_preset_prompt`: style guidelines added to the system prompt. Applies to `create` only; `modify` ignores it.
+
+`create` also takes overrides for the payload's defaults. Each is optional, and leaving it out keeps the default:
+
+- `system_prompt`: replaces the system prompt. `{llm_input_schema}` and `{style_preset_block}` in it are still filled.
+- `input_schema`: the field guide filled into `{llm_input_schema}`.
+- `response_schema`: the JSON schema the model must follow, in Gemini's format. Extra keys in the reply are dropped from the VGL.
+- `thinking_level`: a `vgl.ThinkingLevel` or its string, `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Anything else, or a level on an older Gemini, raises `ValueError` before the call. By default thinking is as low as the model allows.
+- `temperature` and `max_output_tokens`: thinking tokens count against `max_output_tokens`, so raise it with a high thinking level.
+
 vgl logs under the `vgl` logger hierarchy (`vgl.gateway`, `vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
 
 A Gemini call that keeps failing (3 attempts) or hits a rate limit (429, not retried) moves to `gemini-3.1-flash-lite` on the same provider.
