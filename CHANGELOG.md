@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Bria-AI/vgl/compare/v0.2.0...v0.3.0) (2026-10-14)
+
+
+### Features
+
+* import bria-vgl as bria_vgl ([#13](https://github.com/Bria-AI/vgl/issues/13)) ([97759e5](https://github.com/Bria-AI/vgl/commit/97759e5f6bb25f2be50f515646530f3adfe05b26))
+
 ## [0.2.0](https://github.com/Bria-AI/vgl/compare/v0.1.0...v0.2.0) (2026-10-13)
 
 
