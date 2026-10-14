@@ -7,10 +7,10 @@ import litellm
 import pytest
 from litellm.exceptions import BadRequestError, ContentPolicyViolationError, RateLimitError, ServiceUnavailableError, Timeout
 
-from vgl import gateway
-from vgl.exceptions import MaxTokensError, VGLError
-from vgl.gateway import BACKOFF_SECONDS, GEMINI_FALLBACK_MODEL, MAX_ATTEMPTS, ThinkingLevel, _backoff_seconds, _to_standard_json_schema
-from vgl.utils.labels import reset_request_labels, set_request_labels
+from bria_vgl import gateway
+from bria_vgl.exceptions import MaxTokensError, VGLError
+from bria_vgl.gateway import BACKOFF_SECONDS, GEMINI_FALLBACK_MODEL, MAX_ATTEMPTS, ThinkingLevel, _backoff_seconds, _to_standard_json_schema
+from bria_vgl.utils.labels import reset_request_labels, set_request_labels
 
 _GEMINI = "vertex_ai/gemini-2.5-flash"
 _FALLBACK = f"vertex_ai/{GEMINI_FALLBACK_MODEL}"

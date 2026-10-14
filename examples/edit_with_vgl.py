@@ -8,10 +8,10 @@ from pathlib import Path
 
 from PIL import Image
 
-import vgl
-from vgl.dialects.thales import EditImages, ThalesVGL
+import bria_vgl
+from bria_vgl.dialects.thales import EditImages, ThalesVGL
 
 prompt, image_path, vgl_path = sys.argv[1:]
 input_image_vgl = ThalesVGL.model_validate_json(Path(vgl_path).read_text())
-scene = vgl.modify(EditImages(prompt=prompt, images=[Image.open(image_path)], input_image_vgl=input_image_vgl))
+scene = bria_vgl.modify(EditImages(prompt=prompt, images=[Image.open(image_path)], input_image_vgl=input_image_vgl))
 print(scene.model_dump_json(indent=2, exclude_none=True))

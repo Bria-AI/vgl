@@ -5,7 +5,7 @@ import re
 from collections.abc import Mapping
 from pathlib import Path
 
-from vgl.exceptions import PromptNotFoundError
+from bria_vgl.exceptions import PromptNotFoundError
 
 logger = logging.getLogger(__name__)
 

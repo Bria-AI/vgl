@@ -16,7 +16,7 @@ repos:
       - id: prettier
         types_or: [yaml, json5]
         # Prompt config is data; see the ruff exclude in pyproject.toml.
-        exclude: ^src/vgl/v1/.*/config/
+        exclude: ^src/bria_vgl/v1/.*/config/
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.29.1
     hooks:

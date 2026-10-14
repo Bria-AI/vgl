@@ -6,9 +6,9 @@ import pytest
 from PIL import Image
 from pydantic import ValidationError
 
-from vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
-from vgl.exceptions import InvalidResponseError
-from vgl.utils.images import MAX_PIXELS, to_base64_jpeg
+from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
+from bria_vgl.exceptions import InvalidResponseError
+from bria_vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
 
 def _decode_jpeg(encoded: str) -> Image.Image:

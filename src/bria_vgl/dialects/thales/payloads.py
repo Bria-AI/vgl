@@ -9,9 +9,9 @@ from typing import ClassVar
 from PIL import Image
 from pydantic import Field, model_validator
 
-from vgl.dialects.thales.model import ThalesVGL
-from vgl.payload import Payload, Request, vgl_json
-from vgl.utils.images import apply_gray_mask
+from bria_vgl.dialects.thales.model import ThalesVGL
+from bria_vgl.payload import Payload, Request, vgl_json
+from bria_vgl.utils.images import apply_gray_mask
 
 _DIALECT = Path(__file__).parent
 _PROMPTS = _DIALECT / "prompts"

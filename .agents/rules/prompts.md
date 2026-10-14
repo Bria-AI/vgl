@@ -1,6 +1,6 @@
 # Prompt Files Are Data
 
-Prompt templates (`src/vgl/**/prompts/**/*.txt` and the prompt/schema config dirs) are the
+Prompt templates (`src/bria_vgl/**/prompts/**/*.txt` and the prompt/schema config dirs) are the
 exact bytes the model receives. **Never reformat them** — no prettier, no editor auto-format,
 no re-indenting, no "cleaning up" whitespace or JSON examples inside them.
 

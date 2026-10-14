@@ -5,12 +5,12 @@ from litellm.exceptions import AuthenticationError as LiteLLMAuthenticationError
 from litellm.exceptions import RateLimitError as LiteLLMRateLimitError
 from openai import OpenAIError
 
-from vgl import gateway
-from vgl.exceptions import AuthenticationError, LLMError, RateLimitError
-from vgl.gateway import ThinkingLevel
-from vgl.payload import Payload, Request, T
-from vgl.prompting import render_prompts
-from vgl.utils.vertex import validate_vertex_env
+from bria_vgl import gateway
+from bria_vgl.exceptions import AuthenticationError, LLMError, RateLimitError
+from bria_vgl.gateway import ThinkingLevel
+from bria_vgl.payload import Payload, Request, T
+from bria_vgl.prompting import render_prompts
+from bria_vgl.utils.vertex import validate_vertex_env
 
 DEFAULT_LLM = "gemini/gemini-3.5-flash-lite"
 
@@ -35,7 +35,7 @@ def create(
     into ``{llm_input_schema}``. ``thinking_level`` applies to Gemini 3+ only, and raises ``ValueError`` on an unknown level or an older Gemini.
     """
     if not payload.creates:
-        raise TypeError(f"{type(payload).__name__} edits a VGL; pass it to vgl.modify()")
+        raise TypeError(f"{type(payload).__name__} edits a VGL; pass it to bria_vgl.modify()")
     request = payload.to_request()
     overrides = {
         "system_prompt": system_prompt,
@@ -53,7 +53,7 @@ def create(
 def modify(payload: Payload[T], *, llm: str = DEFAULT_LLM, style_preset_prompt: str | None = None, seed: int | None = None) -> T:
     """An edited VGL. ``style_preset_prompt`` is accepted and ignored: presets apply to create only."""
     if payload.creates:
-        raise TypeError(f"{type(payload).__name__} creates a VGL; pass it to vgl.create()")
+        raise TypeError(f"{type(payload).__name__} creates a VGL; pass it to bria_vgl.create()")
     return _run(payload, payload.to_request(), llm=llm, seed=seed, style_preset=None)
 
 

@@ -13,8 +13,8 @@ import time
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw
 
-import vgl
-from vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
+import bria_vgl
+from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
 
 LLMS = ["gemini/gemini-3.5-flash-lite", "vertex_ai/gemini-3.5-flash-lite"]
 
@@ -55,12 +55,12 @@ def _check(name: str, run, *, edit: bool = False) -> ThalesVGL | None:
 
 def smoke(llm: str) -> bool:
     print(llm)
-    scene = _check("create", lambda: vgl.create(Generate(prompt="a red ball in a light blue room"), llm=llm))
-    styled = _check("create with a style preset", lambda: vgl.create(Generate(prompt="a red ball"), llm=llm, style_preset_prompt="Muted film colours."))
+    scene = _check("create", lambda: bria_vgl.create(Generate(prompt="a red ball in a light blue room"), llm=llm))
+    styled = _check("create with a style preset", lambda: bria_vgl.create(Generate(prompt="a red ball"), llm=llm, style_preset_prompt="Muted film colours."))
     if scene is None:
         print("  skip  edits: create failed, so there's no VGL to pass")
         return False
-    edits = [_check(name, lambda payload=payload: vgl.modify(payload, llm=llm), edit=True) for name, payload in _cases(scene)]
+    edits = [_check(name, lambda payload=payload: bria_vgl.modify(payload, llm=llm), edit=True) for name, payload in _cases(scene)]
     return styled is not None and None not in edits
 
 

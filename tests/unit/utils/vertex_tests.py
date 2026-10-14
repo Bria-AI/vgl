@@ -10,7 +10,7 @@ import sys
 
 import pytest
 
-from vgl.utils.vertex import is_vertex_model, validate_vertex_env
+from bria_vgl.utils.vertex import is_vertex_model, validate_vertex_env
 
 _REQUIRED = ("VERTEXAI_PROJECT", "VERTEXAI_LOCATION", "GOOGLE_APPLICATION_CREDENTIALS")
 

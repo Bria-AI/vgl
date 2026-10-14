@@ -3,7 +3,7 @@
 ## Layout
 
 ```
-src/vgl/
+src/bria_vgl/
 ├── api.py            # create, modify
 ├── model.py          # the base VGL model every dialect builds on
 ├── payload.py        # the base every dialect's payloads build on
@@ -26,7 +26,7 @@ A new language is a structured JSON that isn't VGL at all, e.g. one a non-FIBO m
 1. Move `model.py` and `dialects/` into `languages/vgl/`.
 2. Add `languages/<name>/` beside it, with its own base model and `dialects/`.
 3. In `payload.py`, loosen what's tied to `VGL`: `T`'s bound, `vgl_model`'s type, and `vgl_json`. If the new language parses differently, override `parse` in its payloads.
-4. Keep the old `vgl.dialects.<name>` import paths working, since they're public.
+4. Keep the old `bria_vgl.dialects.<name>` import paths working, since they're public.
 
 ## Prompts
 

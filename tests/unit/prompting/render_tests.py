@@ -6,7 +6,7 @@ record comes from a database row somebody typed into a form, and a malformed one
 
 import pytest
 
-from vgl.prompting import placeholders_in, render
+from bria_vgl.prompting import placeholders_in, render
 
 
 @pytest.mark.unit

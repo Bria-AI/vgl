@@ -11,9 +11,9 @@ from boltons.iterutils import remap
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from vgl.exceptions import InvalidResponseError
-from vgl.gateway import ThinkingLevel
-from vgl.model import VGL
+from bria_vgl.exceptions import InvalidResponseError
+from bria_vgl.gateway import ThinkingLevel
+from bria_vgl.model import VGL
 
 T = TypeVar("T", bound=VGL)
 
@@ -44,7 +44,7 @@ class Payload(BaseModel, Generic[T]):
 
     model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
 
-    #: True for payloads that go to ``vgl.create``; False for ``vgl.modify``.
+    #: True for payloads that go to ``bria_vgl.create``; False for ``bria_vgl.modify``.
     creates: ClassVar[bool] = False
     #: The dialect's VGL model, which ``parse`` validates against.
     vgl_model: ClassVar[type[VGL]]

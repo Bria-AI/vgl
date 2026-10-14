@@ -8,7 +8,7 @@ import sys
 import zipfile
 
 wheel = sys.argv[1]
-tracked = subprocess.run(["git", "ls-files", "src/vgl"], capture_output=True, text=True, check=True).stdout.split()
+tracked = subprocess.run(["git", "ls-files", "src/bria_vgl"], capture_output=True, text=True, check=True).stdout.split()
 expected = {path.removeprefix("src/") for path in tracked}
 missing = sorted(expected - set(zipfile.ZipFile(wheel).namelist()))
 if missing:

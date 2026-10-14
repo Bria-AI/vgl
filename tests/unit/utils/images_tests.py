@@ -10,7 +10,7 @@ import io
 import pytest
 from PIL import Image
 
-from vgl.utils.images import apply_gray_mask, to_base64_jpeg
+from bria_vgl.utils.images import apply_gray_mask, to_base64_jpeg
 
 #: The downscale ceiling in ``to_base64_jpeg``.
 _MAX_PIXELS = 262144

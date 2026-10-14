@@ -5,8 +5,8 @@ import logging
 import pytest
 from PIL import Image
 
-from vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
-from vgl.prompting import render_prompts
+from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
+from bria_vgl.prompting import render_prompts
 
 _IMAGE = Image.new("RGB", (8, 8), "red")
 _MASK = Image.new("L", (8, 8), 255)
@@ -42,7 +42,7 @@ class TestBundledPrompts:
         assert system_prompt.strip() and payload.prompt in final_prompt
 
     def test_every_bundled_prompt_should_be_reachable(self):
-        from vgl.dialects.thales.payloads import _PROMPTS
+        from bria_vgl.dialects.thales.payloads import _PROMPTS
 
         bundled = {entry.name for entry in _PROMPTS.iterdir() if entry.is_dir()}
         assert bundled == {p.to_request().prompts.name for p in PAYLOADS}

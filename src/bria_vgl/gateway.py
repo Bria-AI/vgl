@@ -13,9 +13,9 @@ from litellm.exceptions import APIConnectionError, InternalServerError, RateLimi
 from litellm.types.utils import ModelResponse
 from PIL import Image
 
-from vgl.exceptions import MaxTokensError
-from vgl.utils.images import to_base64_jpeg
-from vgl.utils.labels import get_request_labels, label_value
+from bria_vgl.exceptions import MaxTokensError
+from bria_vgl.utils.images import to_base64_jpeg
+from bria_vgl.utils.labels import get_request_labels, label_value
 
 logger = logging.getLogger(__name__)
 

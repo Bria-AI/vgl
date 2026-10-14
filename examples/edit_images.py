@@ -8,9 +8,9 @@ import sys
 
 from PIL import Image
 
-import vgl
-from vgl.dialects.thales import EditImages
+import bria_vgl
+from bria_vgl.dialects.thales import EditImages
 
 prompt, *paths = sys.argv[1:]
-scene = vgl.modify(EditImages(prompt=prompt, images=[Image.open(path) for path in paths]))
+scene = bria_vgl.modify(EditImages(prompt=prompt, images=[Image.open(path) for path in paths]))
 print(scene.model_dump_json(indent=2, exclude_none=True))
