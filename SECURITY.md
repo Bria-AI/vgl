@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-`vgl` is pre-1.0 and ships from [PyPI](https://pypi.org/project/vgl/). Security fixes land on the
+`bria-vgl` is pre-1.0 and ships from [PyPI](https://pypi.org/project/bria-vgl/). Security fixes land on the
 latest released version; please upgrade before reporting, since the issue may already be fixed.
 
 | Version         | Supported          |
@@ -21,8 +21,8 @@ maintainers.
 Please include, as far as you can:
 
 - A description of the vulnerability and its impact.
-- Steps to reproduce (a minimal snippet calling `vgl.create` / `vgl.modify` is ideal).
-- Affected `vgl` version and Python version.
+- Steps to reproduce (a minimal snippet calling `bria_vgl.create` / `bria_vgl.modify` is ideal).
+- Affected `bria-vgl` version and Python version.
 
 ## What to Expect
 
@@ -31,4 +31,4 @@ Please include, as far as you can:
   timeline with you.
 - With your consent, we're happy to credit you in the advisory once the fix ships.
 
-Thank you for helping keep `vgl` and its users safe.
+Thank you for helping keep `bria-vgl` and its users safe.

@@ -2,7 +2,7 @@
 
 **VGL (Visual Generation Language)** — a base Python library that turns a prompt, or images plus
 a prompt, into a structured JSON scene description for image models like FIBO. Source in
-`src/vgl/`; the public API is `vgl.create` / `vgl.modify`.
+`src/bria_vgl/`; the public API is `bria_vgl.create` / `bria_vgl.modify`.
 
 Project rules live in `.agents/rules/`. Read and apply each:
 
@@ -68,7 +68,7 @@ group (`test`, `lint`, `examples`, `dev`). Never hand-edit `uv.lock`.
 
 ## Release
 
-One artifact ships from this repo: the **`vgl` package → PyPI, via release-please.**
+One artifact ships from this repo: the **`bria-vgl` package → PyPI, via release-please.**
 
 - `release-please.yml` runs on every push to `dev` and keeps a Release PR open. Merging that PR
   tags `vX.Y.Z` and publishes a GitHub release; `publish.yml` (on release published) builds with

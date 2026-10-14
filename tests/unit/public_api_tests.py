@@ -6,9 +6,9 @@ curate by hand. A deliberate change updates the expected set here, in the same c
 
 import pytest
 
-import vgl
-from vgl import exceptions
-from vgl.dialects import thales
+import bria_vgl
+from bria_vgl import exceptions
+from bria_vgl.dialects import thales
 
 
 @pytest.mark.unit
@@ -18,8 +18,8 @@ class TestPublicApi:
         expected = {"__version__", "DEFAULT_LLM", "ThinkingLevel", "create", "modify"}
 
         # Act / Assert
-        assert set(vgl.__all__) == expected
-        assert all(hasattr(vgl, name) for name in expected)
+        assert set(bria_vgl.__all__) == expected
+        assert all(hasattr(bria_vgl, name) for name in expected)
 
     def test_exceptions_module_exports_exactly_the_error_hierarchy(self):
         # Arrange

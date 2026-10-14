@@ -3,7 +3,7 @@
 import pytest
 from PIL import Image
 
-from vgl.dialects.thales import ThalesVGL
+from bria_vgl.dialects.thales import ThalesVGL
 
 #: A minimal VGL carrying every required field and nothing optional. Kept as a
 #: dict so tests can mutate one field without restating the rest.

@@ -3,10 +3,10 @@ import json
 import pytest
 from litellm.exceptions import AuthenticationError, RateLimitError, ServiceUnavailableError
 
-import vgl
-from vgl import exceptions, gateway
-from vgl.dialects.thales import EditImages, Generate, ThalesVGL
-from vgl.prompting import BLOCK_PREAMBLE
+import bria_vgl
+from bria_vgl import exceptions, gateway
+from bria_vgl.dialects.thales import EditImages, Generate, ThalesVGL
+from bria_vgl.prompting import BLOCK_PREAMBLE
 
 
 @pytest.fixture(autouse=True)
@@ -30,18 +30,18 @@ def sent(monkeypatch, a_vgl_dict):
 @pytest.mark.unit
 class TestCreate:
     def test_should_return_the_dialects_vgl(self, sent):
-        assert isinstance(vgl.create(Generate(prompt="a fox")), ThalesVGL)
+        assert isinstance(bria_vgl.create(Generate(prompt="a fox")), ThalesVGL)
 
     def test_should_default_to_gemini_on_ai_studio(self, sent):
-        vgl.create(Generate(prompt="a fox"))
-        assert sent[0]["model_name"] == vgl.DEFAULT_LLM == "gemini/gemini-3.5-flash-lite"
+        bria_vgl.create(Generate(prompt="a fox"))
+        assert sent[0]["model_name"] == bria_vgl.DEFAULT_LLM == "gemini/gemini-3.5-flash-lite"
 
     def test_should_send_the_user_prompt_and_seed(self, sent):
-        vgl.create(Generate(prompt="a red fox"), seed=7)
+        bria_vgl.create(Generate(prompt="a red fox"), seed=7)
         assert "a red fox" in sent[0]["user_prompt"] and sent[0]["seed"] == 7
 
     def test_should_compose_a_style_preset_into_the_system_prompt(self, sent):
-        vgl.create(Generate(prompt="a fox"), style_preset_prompt="Muted film colours.")
+        bria_vgl.create(Generate(prompt="a fox"), style_preset_prompt="Muted film colours.")
         assert BLOCK_PREAMBLE in sent[0]["system_prompt"] and "Muted film colours." in sent[0]["system_prompt"]
 
     def test_overrides_should_replace_the_payloads_defaults(self, sent):
@@ -49,7 +49,7 @@ class TestCreate:
         schema = {"type": "OBJECT", "properties": {"image_type": {"type": "STRING"}}}
 
         # Act
-        vgl.create(
+        bria_vgl.create(
             Generate(prompt="a fox"),
             system_prompt="Describe it. Fields: {llm_input_schema}",
             input_schema="1. `short_description`",
@@ -69,7 +69,7 @@ class TestCreate:
         request = Generate(prompt="a fox").to_request()
 
         # Act
-        vgl.create(Generate(prompt="a fox"))
+        bria_vgl.create(Generate(prompt="a fox"))
 
         # Assert
         call = sent[0]
@@ -77,35 +77,35 @@ class TestCreate:
         assert "{llm_input_schema}" not in call["system_prompt"] and "short_description" in call["system_prompt"]
 
     def test_a_custom_system_prompt_should_still_take_a_style_preset(self, sent):
-        vgl.create(Generate(prompt="a fox"), system_prompt="Describe it.", style_preset_prompt="Muted film colours.")
+        bria_vgl.create(Generate(prompt="a fox"), system_prompt="Describe it.", style_preset_prompt="Muted film colours.")
         assert sent[0]["system_prompt"].startswith("Describe it.") and "Muted film colours." in sent[0]["system_prompt"]
 
     def test_should_reject_an_edit_payload(self, an_image):
-        with pytest.raises(TypeError, match="vgl.modify"):
-            vgl.create(EditImages(prompt="p", images=[an_image]))  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="bria_vgl.modify"):
+            bria_vgl.create(EditImages(prompt="p", images=[an_image]))  # type: ignore[arg-type]
 
     def test_a_misspelt_option_should_raise(self):
         with pytest.raises(TypeError):
-            vgl.create(Generate(prompt="p"), lmm="x")  # type: ignore[call-arg]
+            bria_vgl.create(Generate(prompt="p"), lmm="x")  # type: ignore[call-arg]
 
 
 @pytest.mark.unit
 class TestModify:
     def test_should_send_images_in_order(self, sent, an_image, another_image):
-        vgl.modify(EditImages(prompt="p", images=[another_image, an_image]))
+        bria_vgl.modify(EditImages(prompt="p", images=[another_image, an_image]))
         assert sent[0]["images"] == [another_image, an_image]
 
     def test_should_ignore_a_style_preset(self, sent, an_image):
-        vgl.modify(EditImages(prompt="p", images=[an_image]), style_preset_prompt="Muted film colours.")
+        bria_vgl.modify(EditImages(prompt="p", images=[an_image]), style_preset_prompt="Muted film colours.")
         assert "Muted film colours." not in sent[0]["system_prompt"]
 
     def test_should_reject_a_create_payload(self):
-        with pytest.raises(TypeError, match="vgl.create"):
-            vgl.modify(Generate(prompt="p"))
+        with pytest.raises(TypeError, match="bria_vgl.create"):
+            bria_vgl.modify(Generate(prompt="p"))
 
     def test_should_not_take_the_create_overrides(self, an_image):
         with pytest.raises(TypeError):
-            vgl.modify(EditImages(prompt="p", images=[an_image]), system_prompt="x")  # type: ignore[call-arg]
+            bria_vgl.modify(EditImages(prompt="p", images=[an_image]), system_prompt="x")  # type: ignore[call-arg]
 
 
 @pytest.mark.unit
@@ -114,7 +114,7 @@ class TestVertex:
         for name in ("VERTEXAI_PROJECT", "VERTEXAI_LOCATION", "GOOGLE_APPLICATION_CREDENTIALS"):
             monkeypatch.delenv(name, raising=False)
         with pytest.raises(OSError):
-            vgl.create(Generate(prompt="p"), llm="vertex_ai/gemini-3.5-flash-lite")
+            bria_vgl.create(Generate(prompt="p"), llm="vertex_ai/gemini-3.5-flash-lite")
         assert sent == []
 
 
@@ -134,7 +134,7 @@ class TestProviderErrors:
 
         # Act
         with pytest.raises(exceptions.AuthenticationError, match="API key not valid") as raised:
-            vgl.create(Generate(prompt="p"))
+            bria_vgl.create(Generate(prompt="p"))
 
         # Assert
         assert raised.value.__cause__ is rejected
@@ -146,7 +146,7 @@ class TestProviderErrors:
 
         # Act
         with pytest.raises(exceptions.RateLimitError) as raised:
-            vgl.create(Generate(prompt="p"))
+            bria_vgl.create(Generate(prompt="p"))
 
         # Assert
         assert raised.value.__cause__ is limited
@@ -159,7 +159,7 @@ class TestProviderErrors:
 
         # Act
         with pytest.raises(exceptions.LLMError) as raised:
-            vgl.create(Generate(prompt="p"))
+            bria_vgl.create(Generate(prompt="p"))
 
         # Assert
         assert not isinstance(raised.value, (exceptions.AuthenticationError, exceptions.RateLimitError))
@@ -172,7 +172,7 @@ class TestProviderErrors:
 
         # Act
         with pytest.raises(exceptions.AuthenticationError, match="GEMINI_API_KEY"):
-            vgl.create(Generate(prompt="p"))
+            bria_vgl.create(Generate(prompt="p"))
 
         # Assert
         assert sent == []
@@ -183,4 +183,4 @@ class TestProviderErrors:
 
         # Act / Assert
         with pytest.raises(exceptions.MaxTokensError):
-            vgl.create(Generate(prompt="p"))
+            bria_vgl.create(Generate(prompt="p"))

@@ -2,7 +2,7 @@
 
 import pytest
 
-from vgl.prompting import BLOCK_PREAMBLE, STYLE_PRESET_KEY, compose_system_prompt
+from bria_vgl.prompting import BLOCK_PREAMBLE, STYLE_PRESET_KEY, compose_system_prompt
 
 A_BASE = "You are an art director. {llm_input_schema}"
 A_BLOCK = "COLOR\n- Render colours fully saturated."
@@ -40,7 +40,7 @@ class TestComposeIntoADeclaredSlot:
     def test_should_render_the_slot_away_when_the_caller_supplies_no_block(self):
         """Left unfilled it would ship the literal placeholder to the model."""
         # Arrange
-        from vgl.prompting import render
+        from bria_vgl.prompting import render
 
         base = "Intro.\n\n{style_preset_block}The JSON must contain:"
 
@@ -141,7 +141,7 @@ class TestComposeSafety:
     def test_should_leave_the_preamble_out_when_no_preset_is_in_play(self):
         """It announces rules, so it must not appear on a call that carries none."""
         # Arrange
-        from vgl.prompting import render
+        from bria_vgl.prompting import render
 
         # Act
         rendered, _ = render("Intro.\n\n{style_preset_block}Tail.", A_CONTEXT)

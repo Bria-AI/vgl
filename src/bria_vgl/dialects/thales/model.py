@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from vgl.model import VGL
+from bria_vgl.model import VGL
 
 
 class ThalesVGL(VGL):

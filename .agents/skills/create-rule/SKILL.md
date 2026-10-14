@@ -61,7 +61,7 @@ Create `.cursor/rules/<name>.mdc`:
 ---
 description: <one sentence — what this rule enforces>
 alwaysApply: <true for cross-cutting rules; false if glob-scoped>
-globs: [<glob if alwaysApply is false, e.g. "src/vgl/**/prompts/**">]
+globs: [<glob if alwaysApply is false, e.g. "src/bria_vgl/**/prompts/**">]
 ---
 
 @.agents/rules/<name>.md

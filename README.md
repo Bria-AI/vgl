@@ -30,10 +30,10 @@ pip install 'bria-vgl[bedrock]'    # Claude on AWS Bedrock
 ### Create a scene from a prompt
 
 ```python
-import vgl
-from vgl.dialects.thales import Generate
+import bria_vgl
+from bria_vgl.dialects.thales import Generate
 
-scene = vgl.create(Generate(prompt="a red fox in snow at dusk"))
+scene = bria_vgl.create(Generate(prompt="a red fox in snow at dusk"))
 print(scene.short_description)
 print(scene.model_dump_json(indent=2, exclude_none=True))
 ```
@@ -42,13 +42,13 @@ print(scene.model_dump_json(indent=2, exclude_none=True))
 
 ```python
 from PIL import Image
-from vgl.dialects.thales import EditImages
+from bria_vgl.dialects.thales import EditImages
 
 room = Image.open("room.jpg")
 lamp = Image.open("lamp.jpg")
 
-scene = vgl.modify(EditImages(prompt="make it night", images=[room]))
-scene = vgl.modify(EditImages(prompt="put the lamp from <image_2> in <image_1>", images=[room, lamp]))
+scene = bria_vgl.modify(EditImages(prompt="make it night", images=[room]))
+scene = bria_vgl.modify(EditImages(prompt="put the lamp from <image_2> in <image_1>", images=[room, lamp]))
 print(scene.edit_instruction)
 ```
 
@@ -57,10 +57,10 @@ Up to 4 images. The prompt refers to them as `<image_1>` to `<image_4>`, in list
 ### Edit a masked area
 
 ```python
-from vgl.dialects.thales import EditImageWithMask
+from bria_vgl.dialects.thales import EditImageWithMask
 
 mask = Image.open("mask.png")  # white is the area to change; same size as the image
-scene = vgl.modify(EditImageWithMask(prompt="replace it with a cat", image=room, mask=mask))
+scene = bria_vgl.modify(EditImageWithMask(prompt="replace it with a cat", image=room, mask=mask))
 ```
 
 ### Edit with the image's VGL
@@ -68,9 +68,9 @@ scene = vgl.modify(EditImageWithMask(prompt="replace it with a cat", image=room,
 If you have the VGL that an image was generated from, pass it as `input_image_vgl`. The edit then keeps everything the prompt doesn't change, rather than re-describing the image from scratch. vgl doesn't check that it matches the image.
 
 ```python
-scene = vgl.create(Generate(prompt="a cosy living room"))
+scene = bria_vgl.create(Generate(prompt="a cosy living room"))
 image = ...  # generate the image from `scene` with FIBO
-night = vgl.modify(EditImages(prompt="make it night", images=[image], input_image_vgl=scene))
+night = bria_vgl.modify(EditImages(prompt="make it night", images=[image], input_image_vgl=scene))
 ```
 
 Runnable versions are in [`examples/`](https://github.com/Bria-AI/vgl/tree/dev/examples).
@@ -78,8 +78,8 @@ Runnable versions are in [`examples/`](https://github.com/Bria-AI/vgl/tree/dev/e
 ## Options
 
 ```python
-vgl.create(payload, llm="vertex_ai/gemini-3.5-flash-lite", seed=7, style_preset_prompt="Muted film colours, soft grain.")
-vgl.modify(payload, llm=..., seed=...)
+bria_vgl.create(payload, llm="vertex_ai/gemini-3.5-flash-lite", seed=7, style_preset_prompt="Muted film colours, soft grain.")
+bria_vgl.modify(payload, llm=..., seed=...)
 ```
 
 - `llm`: the litellm model id; see [Authenticate](#authenticate).
@@ -91,16 +91,16 @@ vgl.modify(payload, llm=..., seed=...)
 - `system_prompt`: replaces the system prompt. `{llm_input_schema}` and `{style_preset_block}` in it are still filled.
 - `input_schema`: the field guide filled into `{llm_input_schema}`.
 - `response_schema`: the JSON schema the model must follow, in Gemini's format. Extra keys in the reply are dropped from the VGL.
-- `thinking_level`: a `vgl.ThinkingLevel` or its string, `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Anything else, or a level on an older Gemini, raises `ValueError` before the call. By default thinking is as low as the model allows.
+- `thinking_level`: a `bria_vgl.ThinkingLevel` or its string, `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Anything else, or a level on an older Gemini, raises `ValueError` before the call. By default thinking is as low as the model allows.
 - `temperature` and `max_output_tokens`: thinking tokens count against `max_output_tokens`, so raise it with a high thinking level.
 
-vgl logs under the `vgl` logger hierarchy (`vgl.gateway`, `vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
+bria-vgl logs under the `bria_vgl` logger hierarchy (`bria_vgl.gateway`, `bria_vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("bria_vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
 
 A Gemini call that keeps failing (3 attempts) or hits a rate limit (429, not retried) moves to `gemini-3.1-flash-lite` on the same provider.
 
 ## Errors
 
-Everything vgl raises inherits from `vgl.exceptions.VGLError`, except a bad payload, which raises `pydantic.ValidationError` before any LLM call. The classes below all live in `vgl.exceptions`.
+Everything bria-vgl raises inherits from `bria_vgl.exceptions.VGLError`, except a bad payload, which raises `pydantic.ValidationError` before any LLM call. The classes below all live in `bria_vgl.exceptions`.
 
 | Error | Means |
 |---|---|
