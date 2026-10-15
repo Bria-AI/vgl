@@ -741,6 +741,7 @@ class TestOutputSchemaDialect:
             "tags": {"type": "ARRAY", "items": {"type": "STRING"}},
         },
         "required": ["name"],
+        "propertyOrdering": ["name", "count", "tags"],
     }
 
     def test_types_should_become_lower_case(self):
@@ -759,6 +760,14 @@ class TestOutputSchemaDialect:
         # Assert
         assert standard["properties"]["count"]["type"] == ["integer", "null"]
         assert "nullable" not in standard["properties"]["count"]
+
+    def test_property_ordering_should_be_dropped(self):
+        """Gemini-only; not a JSON Schema keyword."""
+        # Act
+        standard = _to_standard_json_schema(self._GEMINI_DIALECT)
+
+        # Assert
+        assert "propertyOrdering" not in standard
 
     def test_every_object_should_gain_additional_properties_false(self):
         """Bedrock's structured output is strict and rejects an object without it."""

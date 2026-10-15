@@ -79,7 +79,7 @@ def _to_standard_json_schema(node: Any) -> Any:
 
     converted = {}
     for key, value in node.items():
-        if key == "nullable":
+        if key in ("nullable", "propertyOrdering"):  # Gemini-only keywords
             continue
         if key == "type" and isinstance(value, str):
             converted[key] = _JSON_SCHEMA_TYPES.get(value.upper(), value.lower())
