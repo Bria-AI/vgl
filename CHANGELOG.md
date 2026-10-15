@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/Bria-AI/vgl/compare/v0.3.1...v0.3.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* send Gemini 3+ minimal thinking on Vertex too ([#9](https://github.com/Bria-AI/vgl/issues/9)) ([f0643a7](https://github.com/Bria-AI/vgl/commit/f0643a7fb410be7881eadb8daf9edfae051b55f3))
+
 ## [0.3.1](https://github.com/Bria-AI/vgl/compare/v0.3.0...v0.3.1) (2026-10-15)
 
 
