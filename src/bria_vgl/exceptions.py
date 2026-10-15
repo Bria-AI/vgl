@@ -5,6 +5,7 @@ __all__ = [
     "LLMError",
     "AuthenticationError",
     "RateLimitError",
+    "ContentFilteredError",
     "InvalidResponseError",
 ]
 
@@ -31,6 +32,10 @@ class AuthenticationError(LLMError):
 
 class RateLimitError(LLMError):
     """The provider answered 429, on the Gemini fallback too: the quota is exhausted."""
+
+
+class ContentFilteredError(LLMError):
+    """The provider's safety filter blocked the prompt or the reply."""
 
 
 class InvalidResponseError(VGLError):
