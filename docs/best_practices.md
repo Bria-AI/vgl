@@ -25,5 +25,5 @@ With several images, refer to them as `<image_1>` to `<image_4>`, in the order o
 ## Getting consistent results
 
 - Pass `input_image_vgl` when you have the VGL the image was generated from. The edit then changes only what the prompt asks for, instead of re-describing the whole image. vgl doesn't check that the VGL matches the image, so pass the right one.
-- Pass a `seed` to make a call repeatable, on models that accept one. Gemini through AI Studio and Claude don't, and vgl logs a warning and drops it.
+- Pass a `seed` to make a call repeatable, on models that accept one. Claude doesn't, and vgl logs a warning and drops it.
 - The prompts are tuned for Gemini. Other models work through litellm, but expect their VGLs to differ.

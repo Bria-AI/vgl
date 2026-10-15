@@ -130,7 +130,7 @@ def _thinking(model_name: str, thinking_level: ThinkingLevel | str | None) -> di
 
 @cache
 def _supports_seed(model_name: str) -> bool:
-    """Whether the provider accepts ``seed``. Unknown models are assumed to, as before.
+    """Whether litellm accepts ``seed`` for this model. Unknown models are assumed to, as before.
 
     Anthropic rejects it on every route, direct and via Bedrock, so sending it unconditionally
     made those providers unreachable with an UnsupportedParamsError.
@@ -195,15 +195,19 @@ def _params(
     thinking_level: ThinkingLevel | str | None = None,
 ) -> dict[str, Any]:
     """litellm.completion's arguments besides the model and messages."""
-    if seed is not None and not _supports_seed(model_name):
-        logger.warning("%s does not accept a seed; dropping it, so this call is not reproducible", model_name)
-        seed = None
+    lowered = model_name.lower()
     params: dict[str, Any] = {"temperature": temperature, "max_tokens": max_output_tokens, "seed": seed}
+    if seed is not None and not _supports_seed(model_name):
+        if "gemini" in lowered:
+            # AI Studio honours a seed; litellm before 1.105 just doesn't list it there.
+            params["allowed_openai_params"] = ["seed"]
+        else:
+            logger.warning("%s does not accept a seed; dropping it, so this call is not reproducible", model_name)
+            params["seed"] = None
     # Anthropic rejects top_p with temperature. Others keep it: Gemini's own default is 0.95, not 1.0.
     if not _is_anthropic(model_name):
         params["top_p"] = top_p
 
-    lowered = model_name.lower()
     # Keyed off the model, not the provider: vertex_ai also serves Claude.
     if "gemini" not in lowered:
         if response_schema:
