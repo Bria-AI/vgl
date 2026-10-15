@@ -636,9 +636,27 @@ class TestSeedSupport:
         # Act / Assert
         assert self._seed_sent(monkeypatch, _GEMINI) == 42
 
+    @pytest.mark.parametrize("model_name", ["gemini/gemini-3.5-flash-lite", "gemini/gemini-2.5-flash"])
+    def test_gemini_on_ai_studio_should_receive_its_seed(self, monkeypatch, model_name):
+        """AI Studio honours a seed, though litellm before 1.105 doesn't list it there."""
+        # Act / Assert
+        assert self._seed_sent(monkeypatch, model_name) == 42
+
+    def test_gemini_on_ai_studio_should_have_its_seed_accepted_by_litellm(self, monkeypatch):
+        """Through litellm's own parameter check, offline: before 1.105 it rejects a seed for AI Studio unless allowed."""
+        # Arrange
+        complete = litellm.completion
+        monkeypatch.setattr(litellm, "completion", lambda **kwargs: complete(**kwargs, mock_response="ok"))
+
+        # Act
+        result = gateway.call(model_name="gemini/gemini-3.5-flash-lite", system_prompt="s", user_prompt="u", seed=42)
+
+        # Assert
+        assert result == "ok"
+
     @pytest.mark.parametrize(
         "model_name",
-        ["anthropic/claude-sonnet-4-5", "bedrock/anthropic.claude-sonnet-4-5-20250929-v1:0", "gemini/gemini-2.5-flash"],
+        ["anthropic/claude-sonnet-4-5", "bedrock/anthropic.claude-sonnet-4-5-20250929-v1:0"],
     )
     def test_a_model_that_rejects_seed_should_have_it_dropped(self, monkeypatch, model_name):
         # Act / Assert
