@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/Bria-AI/vgl/compare/v0.3.0...v0.3.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* send the seed to Gemini on AI Studio ([#15](https://github.com/Bria-AI/vgl/issues/15)) ([785edad](https://github.com/Bria-AI/vgl/commit/785edadfe74b1f089e53435c66ce2ddab63b0e01))
+
 ## [0.3.0](https://github.com/Bria-AI/vgl/compare/v0.2.0...v0.3.0) (2026-10-14)
 
 
