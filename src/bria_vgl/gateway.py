@@ -111,8 +111,8 @@ def _gemini_major(model_name: str) -> int | None:
 
 
 def _thinking_off(model_name: str) -> dict[str, Any]:
-    """Thinking as low as it goes. AI Studio rejects a zero budget on Gemini 3+, so it gets the minimal level instead."""
-    if "vertex_ai" not in model_name.lower() and (_gemini_major(model_name) or 0) >= 3:
+    """Thinking as low as it goes. Gemini 3+ can reject a zero budget, on Vertex too, so it gets the minimal level instead."""
+    if (_gemini_major(model_name) or 0) >= 3:
         return {"thinkingLevel": "minimal"}
     return {"thinkingBudget": 0}
 

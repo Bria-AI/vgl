@@ -429,10 +429,11 @@ class TestProviderSpecificParameters:
             (_GEMINI, {"thinkingBudget": 0}),
             ("gemini/gemini-3.5-flash-lite", {"thinkingLevel": "minimal"}),
             ("gemini/gemini-2.5-flash", {"thinkingBudget": 0}),
+            ("vertex_ai/gemini-3.5-flash", {"thinkingLevel": "minimal"}),
         ],
     )
     def test_gemini_should_get_thinking_off_in_a_form_its_provider_accepts(self, monkeypatch, model_name, thinking):
-        """AI Studio rejects a zero thinking budget on Gemini 3+; Vertex accepts it."""
+        """Gemini 3+ can reject a zero thinking budget on either provider; Gemini 2 has no thinking level."""
         # Act
         sent = self._sent(monkeypatch, model_name, self._SCHEMA)
 
