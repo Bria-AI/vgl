@@ -8,7 +8,7 @@ import pytest
 from litellm.exceptions import BadRequestError, ContentPolicyViolationError, RateLimitError, ServiceUnavailableError, Timeout
 
 from bria_vgl import gateway
-from bria_vgl.exceptions import MaxTokensError, VGLError
+from bria_vgl.exceptions import ContentFilteredError, InvalidResponseError, MaxTokensError, VGLError
 from bria_vgl.gateway import BACKOFF_SECONDS, GEMINI_FALLBACK_MODEL, MAX_ATTEMPTS, ThinkingLevel, _backoff_seconds, _to_standard_json_schema
 from bria_vgl.utils.labels import reset_request_labels, set_request_labels
 
@@ -27,7 +27,7 @@ class _StubMessage:
 
 
 class _StubResponse:
-    def __init__(self, content="ok", finish_reason="stop"):
+    def __init__(self, content: str | None = "ok", finish_reason="stop"):
         self.choices = [_StubMessage(content, finish_reason)]
 
 
@@ -179,6 +179,27 @@ class TestGatewayCall:
         with pytest.raises(MaxTokensError):
             gateway.call(model_name=_GEMINI, system_prompt="s", user_prompt="u")
         assert calls == [_GEMINI, _FALLBACK]
+
+    # --- empty reply ---
+
+    def test_call_on_empty_reply_blocked_by_the_safety_filter_should_raise_content_filtered_error(self, monkeypatch):
+        # Arrange
+        self._patch_completion(monkeypatch, [_StubResponse(None, finish_reason="content_filter")])
+
+        # Act / Assert
+        with pytest.raises(ContentFilteredError):
+            gateway.call(model_name=_GEMINI, system_prompt="s", user_prompt="u")
+
+    def test_call_on_empty_reply_should_raise_invalid_response_error_naming_the_finish_reason(self, monkeypatch):
+        # Arrange
+        self._patch_completion(monkeypatch, [_StubResponse(None, finish_reason="stop")])
+
+        # Act
+        with pytest.raises(InvalidResponseError) as excinfo:
+            gateway.call(model_name=_GEMINI, system_prompt="s", user_prompt="u")
+
+        # Assert
+        assert "finish_reason=stop" in str(excinfo.value)
 
     def test_max_tokens_error_should_be_catchable_as_a_vgl_error(self):
         """Lets callers catch any vgl failure without naming each subclass."""
