@@ -30,6 +30,7 @@ class TestPublicApi:
             "LLMError",
             "AuthenticationError",
             "RateLimitError",
+            "ContentFilteredError",
             "InvalidResponseError",
         }
 

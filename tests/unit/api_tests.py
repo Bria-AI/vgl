@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from litellm.exceptions import AuthenticationError, RateLimitError, ServiceUnavailableError
+from litellm.exceptions import AuthenticationError, ContentPolicyViolationError, RateLimitError, ServiceUnavailableError
 
 import bria_vgl
 from bria_vgl import exceptions, gateway
@@ -151,6 +151,15 @@ class TestProviderErrors:
         # Assert
         assert raised.value.__cause__ is limited
         assert isinstance(raised.value, exceptions.LLMError)
+
+    def test_a_content_policy_violation_should_raise_a_content_filtered_error(self, monkeypatch):
+        # Arrange
+        blocked = ContentPolicyViolationError(message="blocked", llm_provider="gemini", model="gemini/x")
+        monkeypatch.setattr(gateway, "call", _raise(blocked))
+
+        # Act / Assert
+        with pytest.raises(exceptions.ContentFilteredError):
+            bria_vgl.create(Generate(prompt="p"))
 
     def test_any_other_provider_error_should_raise_an_llm_error(self, monkeypatch):
         # Arrange

@@ -2,11 +2,12 @@ import os
 from dataclasses import replace
 
 from litellm.exceptions import AuthenticationError as LiteLLMAuthenticationError
+from litellm.exceptions import ContentPolicyViolationError as LiteLLMContentPolicyViolationError
 from litellm.exceptions import RateLimitError as LiteLLMRateLimitError
 from openai import OpenAIError
 
 from bria_vgl import gateway
-from bria_vgl.exceptions import AuthenticationError, LLMError, RateLimitError
+from bria_vgl.exceptions import AuthenticationError, ContentFilteredError, LLMError, RateLimitError
 from bria_vgl.gateway import ThinkingLevel
 from bria_vgl.payload import Payload, Request, T
 from bria_vgl.prompting import render_prompts
@@ -83,6 +84,8 @@ def _run(payload: Payload[T], request: Request, *, llm: str, seed: int | None, s
         raise AuthenticationError(str(error)) from error
     except LiteLLMRateLimitError as error:
         raise RateLimitError(str(error)) from error
+    except LiteLLMContentPolicyViolationError as error:
+        raise ContentFilteredError(str(error)) from error
     # Every litellm provider error subclasses openai's.
     except OpenAIError as error:
         raise LLMError(str(error)) from error
