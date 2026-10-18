@@ -38,6 +38,17 @@ print(scene.short_description)
 print(scene.model_dump_json(indent=2, exclude_none=True))
 ```
 
+### Create a scene inspired by an image
+
+The image is a visual reference only. The VGL describes the scene the prompt asks for, not the image.
+
+```python
+import bria_vgl
+from bria_vgl.dialects.thales import Inspire
+
+scene = bria_vgl.create(Inspire(prompt="the same fox, at the beach", image=fox))
+```
+
 ### Edit from images
 
 ```python

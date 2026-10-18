@@ -46,6 +46,25 @@ class Generate(ThalesPayload):
         )
 
 
+class Inspire(ThalesPayload):
+    """A new VGL from a prompt, with one image as a visual reference only: the VGL describes the prompt's scene, not the image.
+
+    The image is sent as an RGB JPEG, downscaled to about 0.26 MP if larger, keeping its aspect ratio.
+    """
+
+    creates: ClassVar[bool] = True
+    image: Image.Image
+
+    def to_request(self) -> Request:
+        return Request(
+            prompts=_PROMPTS / "inspire",
+            context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("inspire")},
+            response_schema=_output_schema("generate"),
+            temperature=0.2,
+            images=(self.image,),
+        )
+
+
 class _Edit(ThalesPayload):
     #: The VGL of the first image. With it, the ``_input_vgl`` prompts treat it as the baseline; without, the images are the only source.
     input_image_vgl: ThalesVGL | None = None

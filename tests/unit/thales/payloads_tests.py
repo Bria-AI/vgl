@@ -6,7 +6,8 @@ import pytest
 from PIL import Image
 from pydantic import ValidationError
 
-from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
+from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
+from bria_vgl.dialects.thales.payloads import _PROMPTS, _input_schema, _output_schema
 from bria_vgl.exceptions import InvalidResponseError
 from bria_vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
@@ -96,6 +97,37 @@ class TestImages:
     def test_a_mask_of_another_size_should_be_rejected(self, an_image):
         with pytest.raises(ValidationError, match="must match"):
             EditImageWithMask(prompt="p", image=an_image, mask=Image.new("L", (4, 4), 255))
+
+
+@pytest.mark.unit
+class TestInspire:
+    def test_it_should_create(self, an_image):
+        assert Inspire.creates is True
+
+    def test_it_should_request_the_inspire_prompts_and_schemas(self, an_image):
+        # Act
+        request = Inspire(prompt="a fox at night", image=an_image).to_request()
+
+        # Assert
+        assert request.prompts == _PROMPTS / "inspire"
+        assert request.context == {"user_prompt": "a fox at night", "llm_input_schema": _input_schema("inspire")}
+        assert request.response_schema == _output_schema("generate")
+        assert request.temperature == 0.2
+
+    def test_it_should_carry_exactly_the_one_image(self, an_image):
+        assert list(Inspire(prompt="p", image=an_image).to_request().images) == [an_image]
+
+    def test_the_input_schema_should_be_generate_without_the_diversity_wording(self):
+        assert "stochastic" not in _input_schema("inspire")
+        assert "random choice" not in _input_schema("inspire")
+
+    def test_an_empty_prompt_should_be_rejected(self, an_image):
+        with pytest.raises(ValidationError):
+            Inspire(prompt="", image=an_image)
+
+    def test_a_missing_image_should_be_rejected(self):
+        with pytest.raises(ValidationError):
+            Inspire(prompt="p")  # type: ignore[call-arg]
 
 
 @pytest.mark.unit

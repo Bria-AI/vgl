@@ -39,7 +39,7 @@ class TestPublicApi:
 
     def test_thales_dialect_exports_exactly_its_payloads_and_model(self):
         # Arrange
-        expected = {"Generate", "EditImages", "EditImageWithMask", "ThalesVGL"}
+        expected = {"Generate", "Inspire", "EditImages", "EditImageWithMask", "ThalesVGL"}
 
         # Act / Assert
         assert set(thales.__all__) == expected
