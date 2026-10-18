@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/Bria-AI/vgl/compare/v0.3.2...v0.4.0) (2026-10-18)
+
+
+### Features
+
+* **thales:** add Inspire payload ([#20](https://github.com/Bria-AI/vgl/issues/20)) ([2683ee1](https://github.com/Bria-AI/vgl/commit/2683ee1342f974716c307c65cd136af7ff0f86ff))
+
 ## [0.3.2](https://github.com/Bria-AI/vgl/compare/v0.3.1...v0.3.2) (2026-10-15)
 
 

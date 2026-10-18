@@ -1,6 +1,6 @@
 [project]
 name = "bria-vgl"
-version = "0.3.2"
+version = "0.4.0"
 description = "Turn a prompt, or images plus a prompt, into a structured JSON scene description (VGL) for image models like FIBO."
 readme = "README.md"
 license = "MIT"
