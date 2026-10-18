@@ -1,0 +1,1 @@
+Generate a detailed JSON object, adhering to the expected schema, for an imagined photograph in the hazy dreamy style of your instructions, based on the following request: {user_prompt}.

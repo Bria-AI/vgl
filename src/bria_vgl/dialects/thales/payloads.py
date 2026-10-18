@@ -2,6 +2,7 @@
 
 import json
 from collections.abc import Sequence
+from enum import Enum
 from functools import cache
 from pathlib import Path
 from typing import ClassVar
@@ -28,16 +29,43 @@ def _output_schema(name: str) -> dict:
     return json.loads((_DIALECT / "output_schema" / f"{name}.json").read_text(encoding="utf-8"))
 
 
+@cache
+def _negative_prompt(name: str) -> str:
+    return (_PROMPTS / f"generate_{name}" / "negative_prompt.txt").read_text(encoding="utf-8")
+
+
+class Style(str, Enum):
+    """A look for Generate: its own prompt pair, and a negative prompt for the image model."""
+
+    KODAK_FILM = "kodak_film"
+    HARD_FLASH = "hard_flash"
+    HAZY_DREAMY = "hazy_dreamy"
+
+    @property
+    def negative_prompt(self) -> str:
+        """The caption the image model steers away from for this look, in place of its default."""
+        return _negative_prompt(self.value)
+
+
 class ThalesPayload(Payload[ThalesVGL]):
     vgl_model: ClassVar = ThalesVGL
 
 
 class Generate(ThalesPayload):
-    """A new VGL from a prompt."""
+    """A new VGL from a prompt, optionally in a ``style``: a whole tested prompt pair that replaces the default one."""
 
     creates: ClassVar[bool] = True
+    style: Style | None = None
 
     def to_request(self) -> Request:
+        if self.style is not None:
+            # Style system prompts are complete: no input-schema slot.
+            return Request(
+                prompts=_PROMPTS / f"generate_{self.style.value}",
+                context={"user_prompt": self.prompt},
+                response_schema=_output_schema("generate"),
+                temperature=0.2,
+            )
         return Request(
             prompts=_PROMPTS / "generate",
             context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("generate")},

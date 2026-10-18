@@ -6,9 +6,10 @@ import pytest
 from PIL import Image
 from pydantic import ValidationError
 
-from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
+from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, Inspire, Style, ThalesVGL
 from bria_vgl.dialects.thales.payloads import _PROMPTS, _input_schema, _output_schema
 from bria_vgl.exceptions import InvalidResponseError
+from bria_vgl.prompting import render_prompts
 from bria_vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
 
@@ -128,6 +129,56 @@ class TestInspire:
     def test_a_missing_image_should_be_rejected(self):
         with pytest.raises(ValidationError):
             Inspire(prompt="p")  # type: ignore[call-arg]
+
+
+@pytest.mark.unit
+class TestStyles:
+    @pytest.mark.parametrize("style", list(Style))
+    def test_a_style_should_use_its_own_prompts_at_a_low_temperature(self, style):
+        # Act
+        request = Generate(prompt="a fox", style=style).to_request()
+
+        # Assert
+        assert request.prompts == _PROMPTS / f"generate_{style.value}"
+        assert request.context == {"user_prompt": "a fox"}
+        assert request.response_schema == _output_schema("generate")
+        assert request.temperature == 0.2
+
+    @pytest.mark.parametrize("style", list(Style))
+    def test_a_style_should_render_the_prompt_with_nothing_unfilled(self, style, caplog):
+        # Act
+        system, final = render_prompts(_PROMPTS / f"generate_{style.value}", {"user_prompt": "a fox in snow"})
+
+        # Assert
+        assert "a fox in snow" in final
+        assert "{user_prompt}" not in system + final
+        assert "unfilled" not in caplog.text
+
+    @pytest.mark.parametrize("style", list(Style))
+    def test_a_style_should_have_all_three_prompt_files(self, style):
+        folder = _PROMPTS / f"generate_{style.value}"
+        for name in ("system_prompt.txt", "final_prompt.txt", "negative_prompt.txt"):
+            assert (folder / name).read_text(encoding="utf-8").strip()
+
+    @pytest.mark.parametrize("style", list(Style))
+    def test_the_negative_prompt_should_be_json(self, style):
+        assert isinstance(json.loads(style.negative_prompt), dict)
+
+    def test_no_style_should_leave_generate_unchanged(self):
+        # Act
+        request = Generate(prompt="a fox").to_request()
+
+        # Assert
+        assert request.prompts == _PROMPTS / "generate"
+        assert request.context == {"user_prompt": "a fox", "llm_input_schema": _input_schema("generate")}
+        assert request.temperature == 0.7
+
+    def test_a_style_by_its_value_should_be_accepted(self):
+        assert Generate(prompt="p", style="kodak_film").style is Style.KODAK_FILM  # type: ignore[arg-type]
+
+    def test_an_unknown_style_should_be_rejected(self):
+        with pytest.raises(ValidationError):
+            Generate(prompt="p", style="sepia")  # type: ignore[arg-type]
 
 
 @pytest.mark.unit

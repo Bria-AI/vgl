@@ -49,6 +49,17 @@ from bria_vgl.dialects.thales import Inspire
 scene = bria_vgl.create(Inspire(prompt="the same fox, at the beach", image=fox))
 ```
 
+### Styles
+
+`Generate(prompt=..., style=Style.KODAK_FILM)` swaps in a whole tested prompt pair for that look (`KODAK_FILM`, `HARD_FLASH`, `HAZY_DREAMY`).
+Pass `Style.KODAK_FILM.negative_prompt` to the image model in place of its default negative prompt.
+
+```python
+from bria_vgl.dialects.thales import Generate, Style
+
+scene = bria_vgl.create(Generate(prompt="a red fox in snow", style=Style.KODAK_FILM))
+```
+
 ### Edit from images
 
 ```python
