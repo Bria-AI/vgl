@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/Bria-AI/vgl/compare/v0.4.0...v0.5.0) (2026-10-18)
+
+
+### Features
+
+* final_prompt override in create ([#23](https://github.com/Bria-AI/vgl/issues/23)) ([9f1e163](https://github.com/Bria-AI/vgl/commit/9f1e163b1f0116b163435e466da34b7941bbc288))
+
 ## [0.4.0](https://github.com/Bria-AI/vgl/compare/v0.3.2...v0.4.0) (2026-10-18)
 
 
