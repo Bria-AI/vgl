@@ -80,6 +80,18 @@ class TestCreate:
         bria_vgl.create(Generate(prompt="a fox"), system_prompt="Describe it.", style_preset_prompt="Muted film colours.")
         assert sent[0]["system_prompt"].startswith("Describe it.") and "Muted film colours." in sent[0]["system_prompt"]
 
+    def test_a_final_prompt_should_replace_the_template_and_fill_user_prompt(self, sent):
+        bria_vgl.create(Generate(prompt="a red fox"), final_prompt="Make it: {user_prompt}")
+        assert sent[0]["user_prompt"] == "Make it: a red fox"
+
+    def test_without_a_final_prompt_should_keep_the_folders_template(self, sent):
+        bria_vgl.create(Generate(prompt="a red fox"))
+        assert "a red fox" in sent[0]["user_prompt"] and not sent[0]["user_prompt"].startswith("Make it")
+
+    def test_system_and_final_prompt_overrides_should_work_together(self, sent):
+        bria_vgl.create(Generate(prompt="a red fox"), system_prompt="Describe it.", final_prompt="Make it: {user_prompt}")
+        assert (sent[0]["system_prompt"], sent[0]["user_prompt"]) == ("Describe it.", "Make it: a red fox")
+
     def test_should_reject_an_edit_payload(self, an_image):
         with pytest.raises(TypeError, match="bria_vgl.modify"):
             bria_vgl.create(EditImages(prompt="p", images=[an_image]))  # type: ignore[arg-type]

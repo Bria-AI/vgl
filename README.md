@@ -100,6 +100,7 @@ bria_vgl.modify(payload, llm=..., seed=...)
 `create` also takes overrides for the payload's defaults. Each is optional, and leaving it out keeps the default:
 
 - `system_prompt`: replaces the system prompt. `{llm_input_schema}` and `{style_preset_block}` in it are still filled.
+- `final_prompt`: replaces the final (user) prompt. Its placeholders, such as `{user_prompt}`, are still filled.
 - `input_schema`: the field guide filled into `{llm_input_schema}`.
 - `response_schema`: the JSON schema the model must follow, in Gemini's format. Extra keys in the reply are dropped from the VGL.
 - `thinking_level`: a `bria_vgl.ThinkingLevel` or its string, `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Anything else, or a level on an older Gemini, raises `ValueError` before the call. By default thinking is as low as the model allows.

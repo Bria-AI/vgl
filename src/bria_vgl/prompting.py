@@ -71,18 +71,23 @@ def _read(directory: Path, name: str) -> str:
         raise PromptNotFoundError(f"no {name} in {directory}") from missing
 
 
-def render_prompts(directory: Path, context: Mapping[str, object], style_preset: str | None = None, system_template: str | None = None) -> tuple[str, str]:
-    """The system and final prompts in ``directory``, rendered with ``context``. ``system_template`` replaces the system prompt file."""
+def render_prompts(
+    directory: Path, context: Mapping[str, object], style_preset: str | None = None, system_template: str | None = None, final_template: str | None = None
+) -> tuple[str, str]:
+    """The system and final prompts in ``directory``, rendered with ``context``. ``system_template`` and ``final_template`` replace the files."""
     # Supplied even with no preset, so a prompt that declares the slot never ships it.
     full_context = {STYLE_PRESET_KEY: "", **context}
     if system_template is None:
         system_template = _read(directory, SYSTEM_PROMPT_FILE)
 
+    if final_template is None:
+        final_template = _read(directory, FINAL_PROMPT_FILE)
+
     if style_preset is None:
         system_prompt, system_unfilled = render(system_template, full_context)
     else:
         system_prompt, system_unfilled = compose_system_prompt(system_template, style_preset, full_context)
-    final_prompt, final_unfilled = render(_read(directory, FINAL_PROMPT_FILE), full_context)
+    final_prompt, final_unfilled = render(final_template, full_context)
 
     if unfilled := system_unfilled | final_unfilled:
         # Not an error: it renders as itself, visible and greppable.

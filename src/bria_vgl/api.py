@@ -22,6 +22,7 @@ def create(
     style_preset_prompt: str | None = None,
     seed: int | None = None,
     system_prompt: str | None = None,
+    final_prompt: str | None = None,
     input_schema: str | None = None,
     response_schema: dict | None = None,
     thinking_level: ThinkingLevel | str | None = None,
@@ -30,8 +31,8 @@ def create(
 ) -> T:
     """A new VGL. ``style_preset_prompt`` is composed into the system prompt.
 
-    The rest override the payload's defaults; None keeps them. ``system_prompt`` replaces the template, whose
-    ``{llm_input_schema}`` and ``{style_preset_block}`` are still filled. ``input_schema`` is the field guide filled
+    The rest override the payload's defaults; None keeps them. ``system_prompt`` and ``final_prompt`` replace the
+    templates, whose ``{llm_input_schema}``, ``{style_preset_block}`` and other placeholders are still filled. ``input_schema`` is the field guide filled
     into ``{llm_input_schema}``. ``thinking_level`` applies to Gemini 3+ only, and raises ``ValueError`` on an unknown level or an older Gemini.
     """
     if not payload.creates:
@@ -39,6 +40,7 @@ def create(
     request = payload.to_request()
     overrides = {
         "system_prompt": system_prompt,
+        "final_prompt": final_prompt,
         "response_schema": response_schema,
         "thinking_level": thinking_level,
         "temperature": temperature,
@@ -66,7 +68,7 @@ def _check_gemini_key(llm: str) -> None:
 def _run(payload: Payload[T], request: Request, *, llm: str, seed: int | None, style_preset: str | None) -> T:
     validate_vertex_env(llm)
     _check_gemini_key(llm)
-    system_prompt, user_prompt = render_prompts(request.prompts, request.context, style_preset, request.system_prompt)
+    system_prompt, user_prompt = render_prompts(request.prompts, request.context, style_preset, request.system_prompt, request.final_prompt)
     try:
         text = gateway.call(
             model_name=llm,

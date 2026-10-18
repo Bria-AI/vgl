@@ -29,6 +29,8 @@ class Request:
     temperature: float = 0.2
     #: Replaces the system prompt template in ``prompts``; its placeholders are still filled.
     system_prompt: str | None = None
+    #: Replaces the final prompt template in ``prompts``; its placeholders are still filled.
+    final_prompt: str | None = None
     #: Gemini 3+ only. None keeps thinking off.
     thinking_level: ThinkingLevel | str | None = None
     #: Thinking tokens count against this on Gemini.
