@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/Bria-AI/vgl/compare/v0.5.0...v0.6.0) (2026-10-19)
+
+
+### Features
+
+* **thales:** add Caption payload ([#25](https://github.com/Bria-AI/vgl/issues/25)) ([7ce2a5f](https://github.com/Bria-AI/vgl/commit/7ce2a5fbb5a8247b308de2df3a65b4ebe6b3479d))
+
 ## [0.5.0](https://github.com/Bria-AI/vgl/compare/v0.4.0...v0.5.0) (2026-10-18)
 
 
