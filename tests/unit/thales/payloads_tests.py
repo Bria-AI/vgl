@@ -6,9 +6,10 @@ import pytest
 from PIL import Image
 from pydantic import ValidationError
 
-from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
+from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
 from bria_vgl.dialects.thales.payloads import _PROMPTS, _input_schema, _output_schema
 from bria_vgl.exceptions import InvalidResponseError
+from bria_vgl.prompting import render_prompts
 from bria_vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
 
@@ -128,6 +129,45 @@ class TestInspire:
     def test_a_missing_image_should_be_rejected(self):
         with pytest.raises(ValidationError):
             Inspire(prompt="p")  # type: ignore[call-arg]
+
+
+@pytest.mark.unit
+class TestCaption:
+    def test_it_should_create(self):
+        assert Caption.creates is True
+
+    def test_it_should_request_the_caption_prompts_and_schemas(self, an_image):
+        # Act
+        request = Caption(image=an_image).to_request()
+
+        # Assert
+        assert request.prompts == _PROMPTS / "caption"
+        assert request.context == {"llm_input_schema": _input_schema("inspire")}
+        assert "user_prompt" not in request.context
+        assert request.response_schema == _output_schema("generate")
+        assert request.temperature == 0.2
+
+    def test_it_should_carry_exactly_the_one_image(self, an_image):
+        assert list(Caption(image=an_image).to_request().images) == [an_image]
+
+    def test_it_should_render_the_caption_final_prompt_unchanged(self, an_image):
+        # Arrange
+        request = Caption(image=an_image).to_request()
+
+        # Act
+        _, final_prompt = render_prompts(request.prompts, request.context)
+
+        # Assert
+        assert final_prompt == (_PROMPTS / "caption" / "final_prompt.txt").read_text(encoding="utf-8")
+        assert "{" not in final_prompt
+
+    def test_a_prompt_should_be_rejected(self, an_image):
+        with pytest.raises(ValidationError):
+            Caption(prompt="a fox", image=an_image)  # type: ignore[arg-type]
+
+    def test_a_missing_image_should_be_rejected(self):
+        with pytest.raises(ValidationError):
+            Caption()  # type: ignore[call-arg]
 
 
 @pytest.mark.unit
