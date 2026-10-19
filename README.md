@@ -49,6 +49,16 @@ from bria_vgl.dialects.thales import Inspire
 scene = bria_vgl.create(Inspire(prompt="the same fox, at the beach", image=fox))
 ```
 
+### Describe an image
+
+No prompt: the VGL describes the image itself.
+
+```python
+from bria_vgl.dialects.thales import Caption
+
+scene = bria_vgl.create(Caption(image=fox))
+```
+
 ### Edit from images
 
 ```python

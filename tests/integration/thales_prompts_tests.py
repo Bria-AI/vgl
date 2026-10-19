@@ -5,7 +5,7 @@ import logging
 import pytest
 from PIL import Image
 
-from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
+from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
 from bria_vgl.prompting import render_prompts
 
 _IMAGE = Image.new("RGB", (8, 8), "red")
@@ -23,6 +23,7 @@ _VGL = ThalesVGL.model_validate(
 PAYLOADS = [
     Generate(prompt="a fox"),
     Inspire(prompt="the same fox at night", image=_IMAGE),
+    Caption(image=_IMAGE),
     EditImages(prompt="make it night", images=[_IMAGE]),
     EditImages(prompt="put <image_2> on <image_1>", images=[_IMAGE, _IMAGE]),
     EditImageWithMask(prompt="a cat", image=_IMAGE, mask=_MASK),
@@ -40,7 +41,8 @@ class TestBundledPrompts:
         with caplog.at_level(logging.WARNING, logger="vgl"):
             system_prompt, final_prompt = render_prompts(request.prompts, request.context)
         assert "unfilled" not in caplog.text
-        assert system_prompt.strip() and payload.prompt in final_prompt
+        assert system_prompt.strip() and final_prompt.strip()
+        assert (payload.prompt or "") in final_prompt
 
     def test_every_bundled_prompt_should_be_reachable(self):
         from bria_vgl.dialects.thales.payloads import _PROMPTS
