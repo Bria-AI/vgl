@@ -72,7 +72,7 @@ class Caption(ThalesPayload):
     """
 
     creates: ClassVar[bool] = True
-    prompt: None = None
+    prompt: None = None  # type: ignore[assignment]  # no prompt
     image: Image.Image
 
     def to_request(self) -> Request:
