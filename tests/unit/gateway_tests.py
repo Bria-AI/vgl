@@ -8,7 +8,7 @@ import pytest
 from litellm.exceptions import BadRequestError, ContentPolicyViolationError, RateLimitError, ServiceUnavailableError, Timeout
 
 from bria_vgl import gateway
-from bria_vgl.exceptions import MaxTokensError, VGLError
+from bria_vgl.exceptions import ContentFilterError, MaxTokensError, VGLError
 from bria_vgl.gateway import BACKOFF_SECONDS, GEMINI_FALLBACK_MODEL, MAX_ATTEMPTS, ThinkingLevel, _backoff_seconds, _to_standard_json_schema
 from bria_vgl.utils.labels import reset_request_labels, set_request_labels
 
@@ -27,7 +27,7 @@ class _StubMessage:
 
 
 class _StubResponse:
-    def __init__(self, content="ok", finish_reason="stop"):
+    def __init__(self, content: str | None = "ok", finish_reason="stop"):
         self.choices = [_StubMessage(content, finish_reason)]
 
 
@@ -179,6 +179,17 @@ class TestGatewayCall:
         with pytest.raises(MaxTokensError):
             gateway.call(model_name=_GEMINI, system_prompt="s", user_prompt="u")
         assert calls == [_GEMINI, _FALLBACK]
+
+    # --- safety filter ---
+
+    def test_call_on_reply_blocked_by_the_safety_filter_should_raise_content_filter_error(self, monkeypatch):
+        """litellm reports a Gemini block as a None reply; callers map this to a client error, not a parse failure."""
+        # Arrange
+        self._patch_completion(monkeypatch, [_StubResponse(None, finish_reason="content_filter")])
+
+        # Act / Assert
+        with pytest.raises(ContentFilterError):
+            gateway.call(model_name=_GEMINI, system_prompt="s", user_prompt="u")
 
     def test_max_tokens_error_should_be_catchable_as_a_vgl_error(self):
         """Lets callers catch any vgl failure without naming each subclass."""

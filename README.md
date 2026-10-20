@@ -142,6 +142,7 @@ Everything bria-vgl raises inherits from `bria_vgl.exceptions.VGLError`, except 
 | `LLMError` | any other provider failure, after retries and the fallback |
 | `InvalidResponseError` | the model's reply isn't a valid VGL |
 | `MaxTokensError` | the model ran out of output tokens mid-reply |
+| `ContentFilterError` | the provider's safety filter blocked the prompt or the reply |
 | `PromptNotFoundError` | a bundled prompt is missing; a packaging fault, please report it |
 
 ## Dialects
