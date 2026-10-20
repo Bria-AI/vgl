@@ -42,7 +42,7 @@ class Generate(ThalesPayload):
             prompts=_PROMPTS / "generate",
             context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("generate")},
             response_schema=_output_schema("generate"),
-            temperature=0.7,
+            temperature=0.2,
         )
 
 

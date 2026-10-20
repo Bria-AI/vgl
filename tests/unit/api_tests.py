@@ -73,7 +73,7 @@ class TestCreate:
 
         # Assert
         call = sent[0]
-        assert (call["response_schema"], call["thinking_level"], call["temperature"], call["max_output_tokens"]) == (request.response_schema, None, 0.7, 7000)
+        assert (call["response_schema"], call["thinking_level"], call["temperature"], call["max_output_tokens"]) == (request.response_schema, None, 0.2, 7000)
         assert "{llm_input_schema}" not in call["system_prompt"] and "short_description" in call["system_prompt"]
 
     def test_a_custom_system_prompt_should_still_take_a_style_preset(self, sent):

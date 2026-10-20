@@ -28,9 +28,9 @@ def _prompt_name(payload) -> str:
 
 @pytest.mark.unit
 class TestPromptChoice:
-    def test_generate_should_use_the_generate_prompt_at_a_creative_temperature(self):
+    def test_generate_should_use_the_generate_prompt_at_research_v2s_temperature(self):
         request = Generate(prompt="a fox").to_request()
-        assert (request.prompts.name, request.temperature) == ("generate", 0.7)
+        assert (request.prompts.name, request.temperature) == ("generate", 0.2)
 
     def test_one_image_should_use_the_single_image_edit(self, an_image):
         assert _prompt_name(EditImages(prompt="p", images=[an_image])) == "edit_image"
