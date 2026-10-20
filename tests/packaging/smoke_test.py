@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from PIL import Image, ImageDraw
 
 import bria_vgl
-from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, ThalesVGL
+from bria_vgl.dialects.thales import EditImages, EditImageWithMask, Generate, Refine, ThalesVGL
 
 LLMS = ["gemini/gemini-3.5-flash-lite", "vertex_ai/gemini-3.5-flash-lite"]
 
@@ -58,10 +58,11 @@ def smoke(llm: str) -> bool:
     scene = _check("create", lambda: bria_vgl.create(Generate(prompt="a red ball in a light blue room"), llm=llm))
     styled = _check("create with a style preset", lambda: bria_vgl.create(Generate(prompt="a red ball"), llm=llm, style_preset_prompt="Muted film colours."))
     if scene is None:
-        print("  skip  edits: create failed, so there's no VGL to pass")
+        print("  skip  refine and edits: create failed, so there's no VGL to pass")
         return False
+    refined = _check("refine", lambda: bria_vgl.modify(Refine(prompt="make it night", input_vgl=scene), llm=llm))
     edits = [_check(name, lambda payload=payload: bria_vgl.modify(payload, llm=llm), edit=True) for name, payload in _cases(scene)]
-    return styled is not None and None not in edits
+    return styled is not None and refined is not None and None not in edits
 
 
 if __name__ == "__main__":
