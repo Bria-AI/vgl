@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/Bria-AI/vgl/compare/v0.8.0...v0.9.0) (2026-10-20)
+
+
+### Features
+
+* raise ContentFilteredError on a blocked LLM reply instead of a TypeError ([#19](https://github.com/Bria-AI/vgl/issues/19)) ([301f497](https://github.com/Bria-AI/vgl/commit/301f49728cd33216dfea8d1271d457d43755124b))
+
 ## [0.8.0](https://github.com/Bria-AI/vgl/compare/v0.7.0...v0.8.0) (2026-10-20)
 
 
