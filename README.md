@@ -64,7 +64,7 @@ scene = bria_vgl.create(Caption(image=fox))
 No image: the prompt changes an existing VGL, and the fields it doesn't affect are kept.
 
 ```python
-from bria_vgl.dialects.thales import Refine
+from bria_vgl.dialects.thales import Generate, Refine
 
 scene = bria_vgl.create(Generate(prompt="a cosy living room"))
 night = bria_vgl.modify(Refine(prompt="make it night", input_vgl=scene))

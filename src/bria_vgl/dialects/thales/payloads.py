@@ -86,7 +86,7 @@ class Caption(ThalesPayload):
 
 
 class Refine(ThalesPayload):
-    """An existing VGL changed by a prompt, with no images. The VGL comes back with only the affected fields changed."""
+    """An existing VGL changed by a prompt, with no images. The prompt asks the model to keep the fields it doesn't affect."""
 
     input_vgl: ThalesVGL
 
