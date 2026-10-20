@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 from pydantic import ValidationError
 
-from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
+from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, Refine, ThalesVGL
 from bria_vgl.dialects.thales.payloads import _PROMPTS, _input_schema, _output_schema
 from bria_vgl.exceptions import InvalidResponseError
 from bria_vgl.prompting import render_prompts
@@ -168,6 +168,44 @@ class TestCaption:
     def test_a_missing_image_should_be_rejected(self):
         with pytest.raises(ValidationError):
             Caption()  # type: ignore[call-arg]
+
+
+@pytest.mark.unit
+class TestRefine:
+    def test_it_should_modify(self):
+        assert Refine.creates is False
+
+    def test_it_should_request_the_refine_prompts_and_schemas(self, a_vgl):
+        # Act
+        request = Refine(prompt="make it night", input_vgl=a_vgl).to_request()
+
+        # Assert
+        assert request.prompts == _PROMPTS / "refine"
+        assert request.context["user_prompt"] == "make it night"
+        assert request.context["llm_input_schema"] == _input_schema("inspire")
+        assert json.loads(str(request.context["input_vgl"]))["short_description"] == a_vgl.short_description
+        assert request.response_schema == _output_schema("generate")
+        assert request.temperature == 0.2
+        assert request.images == ()
+
+    def test_it_should_render_the_input_vgl_into_the_final_prompt(self, a_vgl):
+        # Arrange
+        request = Refine(prompt="make it night", input_vgl=a_vgl).to_request()
+
+        # Act
+        _, user_prompt = render_prompts(request.prompts, request.context)
+
+        # Assert
+        assert a_vgl.short_description in user_prompt
+        assert "make it night" in user_prompt
+
+    def test_an_empty_prompt_should_be_rejected(self, a_vgl):
+        with pytest.raises(ValidationError):
+            Refine(prompt="", input_vgl=a_vgl)
+
+    def test_a_missing_input_vgl_should_be_rejected(self):
+        with pytest.raises(ValidationError):
+            Refine(prompt="p")  # type: ignore[call-arg]
 
 
 @pytest.mark.unit

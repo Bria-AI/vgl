@@ -85,6 +85,21 @@ class Caption(ThalesPayload):
         )
 
 
+class Refine(ThalesPayload):
+    """An existing VGL changed by a prompt, with no images. The prompt asks the model to keep the fields it doesn't affect."""
+
+    input_vgl: ThalesVGL
+
+    def to_request(self) -> Request:
+        return Request(
+            prompts=_PROMPTS / "refine",
+            # inspire's schema: the one refine had before it was dropped, without generate's diversity wording.
+            context={"user_prompt": self.prompt, "llm_input_schema": _input_schema("inspire"), "input_vgl": vgl_json(self.input_vgl)},
+            response_schema=_output_schema("generate"),
+            temperature=0.2,
+        )
+
+
 class _Edit(ThalesPayload):
     #: The VGL of the first image. With it, the ``_input_vgl`` prompts treat it as the baseline; without, the images are the only source.
     input_image_vgl: ThalesVGL | None = None

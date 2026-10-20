@@ -5,7 +5,7 @@ import logging
 import pytest
 from PIL import Image
 
-from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, ThalesVGL
+from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, Refine, ThalesVGL
 from bria_vgl.prompting import render_prompts
 
 _IMAGE = Image.new("RGB", (8, 8), "red")
@@ -24,6 +24,7 @@ PAYLOADS = [
     Generate(prompt="a fox"),
     Inspire(prompt="the same fox at night", image=_IMAGE),
     Caption(image=_IMAGE),
+    Refine(prompt="make it night", input_vgl=_VGL),
     EditImages(prompt="make it night", images=[_IMAGE]),
     EditImages(prompt="put <image_2> on <image_1>", images=[_IMAGE, _IMAGE]),
     EditImageWithMask(prompt="a cat", image=_IMAGE, mask=_MASK),
