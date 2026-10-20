@@ -13,7 +13,7 @@ from litellm.exceptions import APIConnectionError, InternalServerError, RateLimi
 from litellm.types.utils import ModelResponse
 from PIL import Image
 
-from bria_vgl.exceptions import MaxTokensError
+from bria_vgl.exceptions import ContentFilteredError, InvalidResponseError, MaxTokensError
 from bria_vgl.utils.images import to_base64_jpeg
 from bria_vgl.utils.labels import get_request_labels, label_value
 
@@ -173,10 +173,15 @@ def call(
         fallback_params = _params(fallback, temperature, top_p, seed, max_output_tokens, response_schema, labels or {}, thinking_level)
         response = _complete_with_retries(fallback, messages, fallback_params)
 
-    if response.choices[0].finish_reason == "length":
+    choice = response.choices[0]
+    if choice.finish_reason == "length":
         raise MaxTokensError(f"Max tokens ({max_output_tokens}) reached for model {model_name}")
-    # litellm types content as optional; a None reply fails parsing downstream.
-    return cast(str, response.choices[0].message.content)
+    # Gemini's safety block arrives as a normal response with no content.
+    if choice.finish_reason == "content_filter":
+        raise ContentFilteredError(f"{model_name} withheld its reply on content grounds")
+    if not choice.message.content:
+        raise InvalidResponseError(f"{model_name} returned an empty reply (finish_reason={choice.finish_reason})")
+    return choice.message.content
 
 
 def _messages(system_prompt: str, user_prompt: str, images: Sequence[Image.Image]) -> list[dict]:

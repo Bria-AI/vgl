@@ -140,7 +140,8 @@ Everything bria-vgl raises inherits from `bria_vgl.exceptions.VGLError`, except 
 | `AuthenticationError` | the provider rejected your credentials, e.g. a missing or wrong API key |
 | `RateLimitError` | the provider returned 429 (quota exhausted), on the Gemini fallback too |
 | `LLMError` | any other provider failure, after retries and the fallback |
-| `InvalidResponseError` | the model's reply isn't a valid VGL |
+| `InvalidResponseError` | the model's reply isn't a valid VGL, or is empty |
+| `ContentFilteredError` | the provider withheld the reply on content grounds, e.g. Gemini's safety filter |
 | `MaxTokensError` | the model ran out of output tokens mid-reply |
 | `PromptNotFoundError` | a bundled prompt is missing; a packaging fault, please report it |
 
