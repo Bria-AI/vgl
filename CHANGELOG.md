@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/Bria-AI/vgl/compare/v0.7.0...v0.8.0) (2026-10-20)
+
+
+### Features
+
+* use research's v2 expander prompt for thales generate ([#31](https://github.com/Bria-AI/vgl/issues/31)) ([5aaf3ec](https://github.com/Bria-AI/vgl/commit/5aaf3ec81f4fc195fa83213bda7617268f30eb52))
+
 ## [0.7.0](https://github.com/Bria-AI/vgl/compare/v0.6.0...v0.7.0) (2026-10-20)
 
 
