@@ -13,7 +13,7 @@ from litellm.exceptions import APIConnectionError, InternalServerError, RateLimi
 from litellm.types.utils import ModelResponse
 from PIL import Image
 
-from bria_vgl.exceptions import MaxTokensError
+from bria_vgl.exceptions import ContentFilteredError, MaxTokensError
 from bria_vgl.utils.images import to_base64_jpeg
 from bria_vgl.utils.labels import get_request_labels, label_value
 
@@ -175,6 +175,9 @@ def call(
 
     if response.choices[0].finish_reason == "length":
         raise MaxTokensError(f"Max tokens ({max_output_tokens}) reached for model {model_name}")
+    # litellm's spelling of a Gemini block, on the prompt or the reply; it comes with no content.
+    if response.choices[0].finish_reason == "content_filter":
+        raise ContentFilteredError(f"Content filter blocked the reply from model {model_name}")
     # litellm types content as optional; a None reply fails parsing downstream.
     return cast(str, response.choices[0].message.content)
 
