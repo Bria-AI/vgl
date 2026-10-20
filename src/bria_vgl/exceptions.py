@@ -35,7 +35,7 @@ class RateLimitError(LLMError):
 
 
 class ContentFilteredError(LLMError):
-    """The provider's safety filter blocked the prompt or the reply."""
+    """The provider's safety filter blocked the prompt or the reply, or the model declined it in its reply."""
 
 
 class InvalidResponseError(VGLError):
