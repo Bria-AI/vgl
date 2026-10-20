@@ -13,6 +13,8 @@ from bria_vgl.gateway import BACKOFF_SECONDS, GEMINI_FALLBACK_MODEL, MAX_ATTEMPT
 from bria_vgl.utils.labels import reset_request_labels, set_request_labels
 
 _GEMINI = "vertex_ai/gemini-2.5-flash"
+#: Gemini behind a proxy: litellm routes it to OpenRouter, which speaks the OpenAI API.
+_PROXIED_GEMINI = "openrouter/google/gemini-3.5-flash-lite"
 _FALLBACK = f"vertex_ai/{GEMINI_FALLBACK_MODEL}"
 
 
@@ -109,16 +111,18 @@ class TestGatewayCall:
         # Assert
         assert thinking == [{"thinkingLevel": "high"}, {"thinkingLevel": "high"}]
 
-    def test_call_on_non_gemini_rate_limit_should_propagate_without_retrying(self, monkeypatch):
+    @pytest.mark.parametrize("model_name", ["gpt-4o", _PROXIED_GEMINI])
+    def test_call_on_non_gemini_rate_limit_should_propagate_without_retrying(self, monkeypatch, model_name):
+        """A proxied Gemini too: the proxy may not serve the fallback model under that name."""
         # Arrange
         calls = self._patch_completion(monkeypatch, [_rate_limited()])
 
         # Act
         with pytest.raises(RateLimitError):
-            gateway.call(model_name="gpt-4o", system_prompt="s", user_prompt="u")
+            gateway.call(model_name=model_name, system_prompt="s", user_prompt="u")
 
         # Assert
-        assert calls == ["gpt-4o"]
+        assert calls == [model_name]
 
     def test_call_on_rate_limit_while_already_on_the_fallback_should_not_retry_again(self, monkeypatch):
         # Arrange
@@ -393,10 +397,11 @@ class TestBackoff:
 
 @pytest.mark.unit
 class TestProviderSpecificParameters:
-    """Every Gemini-specific branch keys off the model, not the provider.
+    """Every Gemini-specific branch needs both a Gemini model and a provider that speaks the Gemini API.
 
     `vertex_ai` also serves Claude, which understands neither `generationConfig` nor
-    `thinkingConfig` — and would have been sent both while getting no usable schema.
+    `thinkingConfig`. A proxy such as OpenRouter serves Gemini through the OpenAI API, which
+    ignores both, so nothing would force JSON.
     """
 
     @staticmethod
@@ -479,9 +484,9 @@ class TestProviderSpecificParameters:
         # Assert
         assert "extra_body" not in sent and "reasoning_effort" not in sent
 
-    @pytest.mark.parametrize("model_name", ["vertex_ai/claude-sonnet-4-5", "anthropic/claude-sonnet-4-5"])
-    def test_claude_should_get_the_schema_as_a_response_format(self, monkeypatch, model_name):
-        """Including on vertex_ai: the provider prefix does not make it a Gemini call.
+    @pytest.mark.parametrize("model_name", ["vertex_ai/claude-sonnet-4-5", "anthropic/claude-sonnet-4-5", "gpt-5", _PROXIED_GEMINI])
+    def test_a_non_gemini_model_should_get_the_schema_in_openais_json_schema_format(self, monkeypatch, model_name):
+        """The format litellm translates for every provider. OpenAI rejects the older `json_object` with a `response_schema`.
 
         Translated to standard JSON Schema on the way out, which is what non-Gemini validates.
         """
@@ -489,10 +494,12 @@ class TestProviderSpecificParameters:
         sent = self._sent(monkeypatch, model_name, self._SCHEMA)
 
         # Assert
-        assert sent["response_format"]["type"] == "json_object"
-        assert sent["response_format"]["response_schema"] == _to_standard_json_schema(self._SCHEMA)
+        assert sent["response_format"] == {
+            "type": "json_schema",
+            "json_schema": {"name": "vgl", "schema": _to_standard_json_schema(self._SCHEMA), "strict": False},
+        }
 
-    @pytest.mark.parametrize("model_name", ["vertex_ai/claude-sonnet-4-5", "anthropic/claude-sonnet-4-5", "gpt-5"])
+    @pytest.mark.parametrize("model_name", ["vertex_ai/claude-sonnet-4-5", "anthropic/claude-sonnet-4-5", "gpt-5", _PROXIED_GEMINI])
     def test_a_non_gemini_model_should_get_no_gemini_configuration(self, monkeypatch, model_name):
         """thinkingConfig and generationConfig are Gemini API concepts; sending them is a request error."""
         # Act

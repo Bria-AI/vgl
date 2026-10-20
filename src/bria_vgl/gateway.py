@@ -105,6 +105,17 @@ def _is_anthropic(model_name: str) -> bool:
     return "anthropic" in lowered or "claude" in lowered
 
 
+@cache
+def _is_native_gemini(model_name: str) -> bool:
+    """Gemini on AI Studio or Vertex, the APIs that take generationConfig. A proxy serves it through the OpenAI API instead."""
+    if "gemini" not in model_name.lower():
+        return False
+    try:
+        return litellm.get_llm_provider(model_name)[1] in ("gemini", "vertex_ai")
+    except Exception:  # litellm knows no provider for this name
+        return False
+
+
 def _gemini_major(model_name: str) -> int | None:
     version = re.search(r"gemini-(\d+)", model_name.lower())
     return int(version.group(1)) if version else None
@@ -198,7 +209,7 @@ def _params(
     lowered = model_name.lower()
     params: dict[str, Any] = {"temperature": temperature, "max_tokens": max_output_tokens, "seed": seed}
     if seed is not None and not _supports_seed(model_name):
-        if "gemini" in lowered:
+        if _is_native_gemini(model_name):
             # AI Studio honours a seed; litellm before 1.105 just doesn't list it there.
             params["allowed_openai_params"] = ["seed"]
         else:
@@ -208,10 +219,14 @@ def _params(
     if not _is_anthropic(model_name):
         params["top_p"] = top_p
 
-    # Keyed off the model, not the provider: vertex_ai also serves Claude.
-    if "gemini" not in lowered:
+    # vertex_ai also serves Claude, and a proxy serves Gemini through the OpenAI API.
+    if not _is_native_gemini(model_name):
         if response_schema:
-            params["response_format"] = {"type": "json_object", "response_schema": _to_standard_json_schema(response_schema)}
+            # OpenAI's format, which litellm translates for each provider. Not strict: the VGL schema has optional fields.
+            params["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": "vgl", "schema": _to_standard_json_schema(response_schema), "strict": False},
+            }
         return params
 
     params["metadata"] = {"billing_category": "production"}
@@ -226,8 +241,8 @@ def _params(
 
 
 def _fallback_model(model_name: str) -> str | None:
-    """The lighter Gemini on the same provider prefix, or None for a non-Gemini model or one already on it."""
-    if "gemini" not in model_name.lower():
+    """The lighter Gemini on the same provider prefix, or None unless the model is Gemini on AI Studio or Vertex, or already the fallback."""
+    if not _is_native_gemini(model_name):
         return None
     prefix, slash, _ = model_name.rpartition("/")
     fallback = f"{prefix}{slash}{GEMINI_FALLBACK_MODEL}"

@@ -129,7 +129,7 @@ bria_vgl.modify(payload, llm=..., seed=...)
 
 bria-vgl logs under the `bria_vgl` logger hierarchy (`bria_vgl.gateway`, `bria_vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("bria_vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
 
-A Gemini call that keeps failing (3 attempts) or hits a rate limit (429, not retried) moves to `gemini-3.1-flash-lite` on the same provider.
+A Gemini call on AI Studio or Vertex that keeps failing (3 attempts) or hits a rate limit (429, not retried) moves to `gemini-3.1-flash-lite` on the same provider. Gemini behind a proxy, such as `openrouter/google/…`, gets no fallback.
 
 ## Errors
 
