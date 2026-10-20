@@ -31,6 +31,7 @@ class TestPublicApi:
             "AuthenticationError",
             "RateLimitError",
             "InvalidResponseError",
+            "ContentFilteredError",
         }
 
         # Act / Assert

@@ -6,6 +6,7 @@ __all__ = [
     "AuthenticationError",
     "RateLimitError",
     "InvalidResponseError",
+    "ContentFilteredError",
 ]
 
 
@@ -35,3 +36,7 @@ class RateLimitError(LLMError):
 
 class InvalidResponseError(VGLError):
     """The model's reply isn't valid JSON for the payload's VGL model."""
+
+
+class ContentFilteredError(VGLError):
+    """The provider withheld the reply on content grounds, e.g. Gemini's safety filter."""
