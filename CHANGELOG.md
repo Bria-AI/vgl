@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/Bria-AI/vgl/compare/v0.6.0...v0.7.0) (2026-10-20)
+
+
+### Features
+
+* restore Refine, a VGL changed by a prompt with no image ([#28](https://github.com/Bria-AI/vgl/issues/28)) ([69a6c73](https://github.com/Bria-AI/vgl/commit/69a6c73ad953239dfe9478c6d22c7b6adce9f3c0))
+
 ## [0.6.0](https://github.com/Bria-AI/vgl/compare/v0.5.0...v0.6.0) (2026-10-19)
 
 
