@@ -26,6 +26,7 @@ class TestPublicApi:
         expected = {
             "VGLError",
             "MaxTokensError",
+            "ContentFilteredError",
             "PromptNotFoundError",
             "LLMError",
             "AuthenticationError",

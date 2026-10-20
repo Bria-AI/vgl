@@ -1,6 +1,7 @@
 __all__ = [
     "VGLError",
     "MaxTokensError",
+    "ContentFilteredError",
     "PromptNotFoundError",
     "LLMError",
     "AuthenticationError",
@@ -15,6 +16,10 @@ class VGLError(Exception):
 
 class MaxTokensError(VGLError):
     """The model stopped because it hit its max output token budget."""
+
+
+class ContentFilteredError(VGLError):
+    """The provider's safety filter blocked the prompt or the reply, so there is no reply to parse."""
 
 
 class PromptNotFoundError(VGLError):
