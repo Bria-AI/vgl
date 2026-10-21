@@ -172,8 +172,9 @@ class TestCaption:
 
 @pytest.mark.unit
 class TestRefine:
-    def test_it_should_modify(self):
-        assert Refine.creates is False
+    def test_it_should_create_and_modify(self):
+        assert Refine.creates is True
+        assert Refine.modifies is True
 
     def test_it_should_request_the_refine_prompts_and_schemas(self, a_vgl):
         # Act

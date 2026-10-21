@@ -88,6 +88,9 @@ class Caption(ThalesPayload):
 class Refine(ThalesPayload):
     """An existing VGL changed by a prompt, with no images. The prompt asks the model to keep the fields it doesn't affect."""
 
+    creates: ClassVar[bool] = True
+    modifies: ClassVar[bool] = True
+
     input_vgl: ThalesVGL
 
     def to_request(self) -> Request:

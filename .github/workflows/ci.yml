@@ -83,6 +83,7 @@ jobs:
             --severity CRITICAL,HIGH \
             --exit-code 1 \
             --format table \
+            --ignorefile .trivyignore.yaml \
             .
 
   test:

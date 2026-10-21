@@ -55,7 +55,7 @@ def create(
 
 def modify(payload: Payload[T], *, llm: str = DEFAULT_LLM, style_preset_prompt: str | None = None, seed: int | None = None) -> T:
     """An edited VGL. ``style_preset_prompt`` is accepted and ignored: presets apply to create only."""
-    if payload.creates:
+    if payload.creates and not payload.modifies:
         raise TypeError(f"{type(payload).__name__} creates a VGL; pass it to bria_vgl.create()")
     return _run(payload, payload.to_request(), llm=llm, seed=seed, style_preset=None)
 
