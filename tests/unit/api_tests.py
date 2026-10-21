@@ -103,6 +103,10 @@ class TestCreate:
         bria_vgl.create(Refine(prompt="make it night", input_vgl=a_vgl), temperature=0.5)
         assert sent[0]["temperature"] == 0.5
 
+    def test_a_refine_payload_should_take_a_style_preset(self, sent, a_vgl):
+        bria_vgl.create(Refine(prompt="make it night", input_vgl=a_vgl), style_preset_prompt="Muted film colours.")
+        assert BLOCK_PREAMBLE in sent[0]["system_prompt"] and "Muted film colours." in sent[0]["system_prompt"]
+
     def test_a_misspelt_option_should_raise(self):
         with pytest.raises(TypeError):
             bria_vgl.create(Generate(prompt="p"), lmm="x")  # type: ignore[call-arg]

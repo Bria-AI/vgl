@@ -1,8 +1,0 @@
-# pillow 12.3.0 is locked for Python 3.10: no pillow release with these fixes supports 3.10 (13.0.0 needs 3.11+).
-CVE-2026-112403
-CVE-2026-112397
-CVE-2026-112400
-CVE-2026-112404
-CVE-2026-112895
-CVE-2026-112896
-CVE-2026-112897
