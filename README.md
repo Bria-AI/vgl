@@ -70,6 +70,8 @@ scene = bria_vgl.create(Generate(prompt="a cosy living room"))
 night = bria_vgl.modify(Refine(prompt="make it night", input_vgl=scene))
 ```
 
+`bria_vgl.create(Refine(...))` works too, and takes the `create()` options.
+
 ### Edit from images
 
 ```python

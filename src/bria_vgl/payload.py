@@ -46,8 +46,10 @@ class Payload(BaseModel, Generic[T]):
 
     model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
 
-    #: True for payloads that go to ``bria_vgl.create``; False for ``bria_vgl.modify``.
+    #: True for payloads that go to ``bria_vgl.create``; False for ``bria_vgl.modify`` only.
     creates: ClassVar[bool] = False
+    #: True for a creating payload that ``bria_vgl.modify`` also accepts.
+    modifies: ClassVar[bool] = False
     #: The dialect's VGL model, which ``parse`` validates against.
     vgl_model: ClassVar[type[VGL]]
 

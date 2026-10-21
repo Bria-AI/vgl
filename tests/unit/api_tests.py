@@ -5,7 +5,7 @@ from litellm.exceptions import AuthenticationError, ContentPolicyViolationError,
 
 import bria_vgl
 from bria_vgl import exceptions, gateway
-from bria_vgl.dialects.thales import EditImages, Generate, ThalesVGL
+from bria_vgl.dialects.thales import EditImages, Generate, Refine, ThalesVGL
 from bria_vgl.prompting import BLOCK_PREAMBLE
 
 
@@ -96,6 +96,13 @@ class TestCreate:
         with pytest.raises(TypeError, match="bria_vgl.modify"):
             bria_vgl.create(EditImages(prompt="p", images=[an_image]))  # type: ignore[arg-type]
 
+    def test_should_accept_a_refine_payload(self, sent, a_vgl):
+        assert isinstance(bria_vgl.create(Refine(prompt="make it night", input_vgl=a_vgl)), ThalesVGL)
+
+    def test_a_refine_payload_should_take_the_overrides(self, sent, a_vgl):
+        bria_vgl.create(Refine(prompt="make it night", input_vgl=a_vgl), temperature=0.5)
+        assert sent[0]["temperature"] == 0.5
+
     def test_a_misspelt_option_should_raise(self):
         with pytest.raises(TypeError):
             bria_vgl.create(Generate(prompt="p"), lmm="x")  # type: ignore[call-arg]
@@ -114,6 +121,9 @@ class TestModify:
     def test_should_reject_a_create_payload(self):
         with pytest.raises(TypeError, match="bria_vgl.create"):
             bria_vgl.modify(Generate(prompt="p"))
+
+    def test_should_still_accept_a_refine_payload(self, sent, a_vgl):
+        assert isinstance(bria_vgl.modify(Refine(prompt="make it night", input_vgl=a_vgl)), ThalesVGL)
 
     def test_should_not_take_the_create_overrides(self, an_image):
         with pytest.raises(TypeError):
