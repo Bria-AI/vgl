@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/Bria-AI/vgl/compare/v0.9.0...v0.10.0) (2026-10-21)
+
+
+### Features
+
+* accept Refine in create() as well as modify() ([#40](https://github.com/Bria-AI/vgl/issues/40)) ([9f1c9a4](https://github.com/Bria-AI/vgl/commit/9f1c9a411d5f7c3c07a8df172da9128bf664933c))
+
 ## [0.9.0](https://github.com/Bria-AI/vgl/compare/v0.8.0...v0.9.0) (2026-10-20)
 
 
