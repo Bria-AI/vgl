@@ -50,7 +50,7 @@ body:
     id: python-version
     attributes:
       label: Python Version
-      description: What version of Python are you using? (vgl supports 3.10–3.13)
+      description: What version of Python are you using? (vgl supports 3.11–3.14)
       placeholder: "3.12"
     validations:
       required: true

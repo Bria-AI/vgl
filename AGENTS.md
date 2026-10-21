@@ -10,7 +10,7 @@ Project rules live in `.agents/rules/`. Read and apply each:
 
 ## Environment
 
-- Python **>=3.10** (supports 3.10–3.13; Ruff/Pyright target **py310**).
+- Python **>=3.11** (supports 3.11–3.14; Ruff/Pyright target **py311**).
 - Package manager: **`uv`**. Virtual env: `.venv` (run commands via `uv run` or `.venv/bin/python`).
 - Credentials in `.env`. The default LLM is Gemini via Google AI Studio (`GEMINI_API_KEY`);
   Vertex and Bedrock are optional extras. See `README.md` → Authenticate.
@@ -87,7 +87,7 @@ One artifact ships from this repo: the **`bria-vgl` package → PyPI, via releas
 
 `ci.yml` is a self-contained Python CI (no shared/reusable workflow) that runs on every PR and on
 push to `dev`: `format` / `lint` / `typecheck` / `security` (gitleaks + trivy), then a test matrix
-(Python 3.10–3.14 × ubuntu/macOS).
+(Python 3.11–3.14 × ubuntu/macOS).
 
 See `CONTRIBUTING.md` for the source layout and the human-facing version of the above, and
 `README.md` for the library's public API.

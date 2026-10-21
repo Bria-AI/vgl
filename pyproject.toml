@@ -11,7 +11,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -21,7 +20,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 # vgl is a base package: every spec stays an open lower bound, floored at the oldest
 # version whose API vgl actually uses. A hard pin here becomes a resolution conflict for
 # every consumer, who then has to carry an override.
@@ -30,7 +29,7 @@ dependencies = [
     "boltons>=20.0.0",
     # The whole surface used is Image.Image/new/open/composite, Image.Resampling and
     # .convert/.resize/.save. The newest of those, Image.Resampling, landed in 9.1.
-    "pillow>=9.1.0",
+    "pillow>=13.0.0",
     # The VGL models and payloads. v2-only API, so 2.0 is the honest floor.
     "pydantic>=2.0",
     # Floor is a version vgl is known to run on, not the newest release.
@@ -106,7 +105,7 @@ ignore = ["PERF203"]
 
 [tool.ruff]
 line-length = 160
-target-version = "py310"
+target-version = "py311"
 
 [tool.pytest.ini_options]
 log_cli = true

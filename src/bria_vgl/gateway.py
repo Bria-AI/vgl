@@ -30,7 +30,7 @@ RETRYABLE_ERRORS = (InternalServerError, ServiceUnavailableError, APIConnectionE
 FALLBACK_ERRORS = (RateLimitError, *RETRYABLE_ERRORS)
 
 
-class ThinkingLevel(str, Enum):
+class ThinkingLevel(str, Enum):  # noqa: UP042 - StrEnum changes str() and format(), which callers of this public API may rely on
     """Gemini 3's thinking levels. A plain string such as ``"high"`` is accepted wherever one is."""
 
     MINIMAL = "minimal"

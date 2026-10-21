@@ -83,7 +83,6 @@ jobs:
             --severity CRITICAL,HIGH \
             --exit-code 1 \
             --format table \
-            --ignorefile .trivyignore.yaml \
             .
 
   test:
@@ -93,7 +92,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-latest"]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
