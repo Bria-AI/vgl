@@ -91,5 +91,5 @@ def render_prompts(
 
     if unfilled := system_unfilled | final_unfilled:
         # Not an error: it renders as itself, visible and greppable.
-        get_logger(__name__).warning("unfilled prompt placeholders %s in %s", sorted(unfilled), directory.name)
+        logger.warning("unfilled prompt placeholders", extra={"placeholders": sorted(unfilled), "prompts": directory.name})
     return system_prompt, final_prompt

@@ -168,7 +168,7 @@ def call(
         fallback = _fallback_model(model_name)
         if fallback is None:
             raise
-        get_logger(__name__).warning("Gemini model exhausted its attempts; moving to the fallback", extra={"model": model_name, "fallback": fallback})
+        logger.warning("Gemini model exhausted its attempts; moving to the fallback", extra={"model": model_name, "fallback": fallback})
         # Rebuilt, since the thinking format depends on the model.
         fallback_params = _params(fallback, temperature, top_p, seed, max_output_tokens, response_schema, labels or {}, thinking_level)
         response = _complete_with_retries(fallback, messages, fallback_params)
@@ -207,7 +207,7 @@ def _params(
             # AI Studio honours a seed; litellm before 1.105 just doesn't list it there.
             params["allowed_openai_params"] = ["seed"]
         else:
-            get_logger(__name__).warning("%s does not accept a seed; dropping it, so this call is not reproducible", model_name)
+            logger.warning("Model does not accept a seed; dropping it, so this call is not reproducible", extra={"model": model_name})
             params["seed"] = None
     # Anthropic rejects top_p with temperature. Others keep it: Gemini's own default is 0.95, not 1.0.
     if not _is_anthropic(model_name):
@@ -246,7 +246,7 @@ def _complete_with_retries(model: str, messages: list[dict], params: dict[str, A
             return _complete(model, messages, params)
         except RETRYABLE_ERRORS as transient:
             delay = _backoff_seconds(attempt)
-            get_logger(__name__).warning(
+            logger.warning(
                 "Transient LLM failure; retrying the same model",
                 extra={"model": model, "attempt": attempt, "error": type(transient).__name__, "delay_seconds": round(delay, 3)},
             )
@@ -261,4 +261,4 @@ def _complete(model: str, messages: list[dict], params: dict[str, Any]) -> Model
         return cast(ModelResponse, litellm.completion(model=model, messages=messages, **params))
     finally:
         # A call that fails fast is the one worth timing.
-        get_logger(__name__).info("LLM call", extra={"model": model, "duration_seconds": round(time.perf_counter() - start, 3)})
+        logger.info("LLM call", extra={"model": model, "duration_seconds": round(time.perf_counter() - start, 3)})

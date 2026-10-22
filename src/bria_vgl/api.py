@@ -78,7 +78,7 @@ def _run(payload: Payload[T], request: Request, *, llm: str, seed: int | None, s
     try:
         return payload.parse(_call(request, system_prompt, user_prompt, llm=llm, seed=seed))
     except InvalidResponseError as invalid:
-        get_logger(__name__).warning("%s replied without a valid VGL, retrying once: %s", llm, invalid)
+        logger.warning("Reply without a valid VGL; retrying once", extra={"model": llm, "error": str(invalid)})
     # Another seed, so a glitch isn't replayed. A second invalid reply reads as a refusal, the model leaving out the scene.
     retry_seed = None if seed is None else (seed + 1) % _SEEDS
     try:

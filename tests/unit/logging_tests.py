@@ -62,6 +62,9 @@ class TestInjectableLogger:
         # Assert
         assert [r.name for r in caplog.records] == ["custom"]
         assert "unfilled prompt placeholders" in caplog.text
+        # The proxy returns the real bound method, so the record points at the call site, not logging.py.
+        assert (caplog.records[0].filename, caplog.records[0].funcName) == ("prompting.py", "render_prompts")
+        assert caplog.records[0].request_id == "r1"
 
     def test_set_logger_none_restores_the_default(self, caplog):
         # Arrange
