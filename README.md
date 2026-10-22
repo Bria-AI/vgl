@@ -144,8 +144,11 @@ Everything bria-vgl raises inherits from `bria_vgl.exceptions.VGLError`, except 
 | `ContentFilteredError` | the provider's safety filter blocked the prompt or the reply |
 | `LLMError` | any other provider failure, after retries and the fallback |
 | `InvalidResponseError` | the model's reply isn't a valid VGL |
+| `UnusableReplyError` | the model twice replied without a valid VGL, which reads as a refusal; it is both a `ContentFilteredError` and an `InvalidResponseError` |
 | `MaxTokensError` | the model ran out of output tokens mid-reply |
 | `PromptNotFoundError` | a bundled prompt is missing; a packaging fault, please report it |
+
+A reply that isn't a valid VGL is asked for once more, with the next seed. A model that won't depict a prompt often answers with JSON that leaves out the scene, or with prose, rather than a filtered reply, so a second such reply raises `UnusableReplyError`.
 
 ## Dialects
 

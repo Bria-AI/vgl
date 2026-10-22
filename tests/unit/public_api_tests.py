@@ -32,6 +32,7 @@ class TestPublicApi:
             "RateLimitError",
             "ContentFilteredError",
             "InvalidResponseError",
+            "UnusableReplyError",
         }
 
         # Act / Assert
