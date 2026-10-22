@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from bria_vgl.dialects.thales import Caption, EditImages, EditImageWithMask, Generate, Inspire, Refine, ThalesVGL
 from bria_vgl.dialects.thales.payloads import _PROMPTS, _input_schema, _output_schema
-from bria_vgl.exceptions import InvalidResponseError
+from bria_vgl.exceptions import ContentFilteredError, InvalidResponseError
 from bria_vgl.prompting import render_prompts
 from bria_vgl.utils.images import MAX_PIXELS, to_base64_jpeg
 
@@ -261,7 +261,17 @@ class TestParse:
         # Assert
         assert "image_type" not in dumped and "mood" not in dumped["lighting"]
 
-    @pytest.mark.parametrize("reply", ["not json", "[]", '{"short_description": "only this"}'])
+    @pytest.mark.parametrize("reply", ["not json", "[]", '{"short_description": "a scene", "lighting": {"conditions": "dim"}}'])
     def test_an_invalid_reply_should_raise(self, reply):
         with pytest.raises(InvalidResponseError):
             Generate(prompt="p").parse(reply)
+
+    def test_a_reply_with_only_a_description_should_raise_content_filtered(self, an_image):
+        # Arrange - the model filled the schema with empty values beside its refusal
+        reply = json.dumps(
+            {"short_description": "I can't make that edit.", "objects": [], "background_setting": "", "lighting": {}, "aesthetics": {}, "context": ""}
+        )
+
+        # Act / Assert
+        with pytest.raises(ContentFilteredError):
+            EditImages(prompt="p", images=[an_image]).parse(reply)
