@@ -129,7 +129,7 @@ bria_vgl.modify(payload, llm=..., seed=...)
 - `thinking_level`: a `bria_vgl.ThinkingLevel` or its string, `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Anything else, or a level on an older Gemini, raises `ValueError` before the call. By default thinking is as low as the model allows.
 - `temperature` and `max_output_tokens`: thinking tokens count against `max_output_tokens`, so raise it with a high thinking level.
 
-bria-vgl logs under the `bria_vgl` logger hierarchy (`bria_vgl.gateway`, `bria_vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("bria_vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
+bria-vgl logs under the `bria_vgl` logger hierarchy (`bria_vgl.gateway`, `bria_vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("bria_vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields. Or call `bria_vgl.set_logger(logger)` to send all of bria-vgl's logging to your own `Logger` or `LoggerAdapter` (e.g. one carrying request context); `set_logger(None)` restores the default.
 
 A Gemini call that keeps failing (3 attempts) or hits a rate limit (429, not retried) moves to `gemini-3.1-flash-lite` on the same provider.
 
