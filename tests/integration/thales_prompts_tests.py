@@ -39,7 +39,7 @@ class TestBundledPrompts:
     @pytest.mark.parametrize("payload", PAYLOADS, ids=lambda p: p.to_request().prompts.name)
     def test_should_render_with_every_placeholder_filled(self, payload, caplog):
         request = payload.to_request()
-        with caplog.at_level(logging.WARNING, logger="vgl"):
+        with caplog.at_level(logging.WARNING, logger="bria_vgl"):
             system_prompt, final_prompt = render_prompts(request.prompts, request.context)
         assert "unfilled" not in caplog.text
         assert system_prompt.strip() and final_prompt.strip()

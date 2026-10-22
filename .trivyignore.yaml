@@ -14,3 +14,27 @@ vulnerabilities:
     purls: ["pkg:pypi/pillow@12.3.0"]
   - id: CVE-2026-112897
     purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112390
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112392
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112393
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112399
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112402
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112405
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112406
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112892
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112893
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112894
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112900
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112902
+    purls: ["pkg:pypi/pillow@12.3.0"]

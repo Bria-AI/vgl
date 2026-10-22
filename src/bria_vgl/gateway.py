@@ -1,4 +1,3 @@
-import logging
 import os
 import random
 import re
@@ -14,10 +13,11 @@ from litellm.types.utils import ModelResponse
 from PIL import Image
 
 from bria_vgl.exceptions import ContentFilteredError, InvalidResponseError, MaxTokensError
+from bria_vgl.logging import get_logger
 from bria_vgl.utils.images import to_base64_jpeg
 from bria_vgl.utils.labels import get_request_labels, label_value
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Lighter model tried when the primary Gemini/Vertex model keeps failing.
 GEMINI_FALLBACK_MODEL = "gemini-3.1-flash-lite"
@@ -207,7 +207,7 @@ def _params(
             # AI Studio honours a seed; litellm before 1.105 just doesn't list it there.
             params["allowed_openai_params"] = ["seed"]
         else:
-            logger.warning("%s does not accept a seed; dropping it, so this call is not reproducible", model_name)
+            logger.warning("Model does not accept a seed; dropping it, so this call is not reproducible", extra={"model": model_name})
             params["seed"] = None
     # Anthropic rejects top_p with temperature. Others keep it: Gemini's own default is 0.95, not 1.0.
     if not _is_anthropic(model_name):
