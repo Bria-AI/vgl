@@ -9,10 +9,12 @@ from openai import OpenAIError
 from bria_vgl import gateway
 from bria_vgl.exceptions import AuthenticationError, ContentFilteredError, InvalidResponseError, LLMError, RateLimitError, UnusableReplyError
 from bria_vgl.gateway import ThinkingLevel
-from bria_vgl.log import get_logger
+from bria_vgl.logging import get_logger
 from bria_vgl.payload import Payload, Request, T
 from bria_vgl.prompting import render_prompts
 from bria_vgl.utils.vertex import validate_vertex_env
+
+logger = get_logger(__name__)
 
 DEFAULT_LLM = "gemini/gemini-3.5-flash-lite"
 #: Gemini takes a 32-bit seed.

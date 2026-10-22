@@ -5,7 +5,9 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from bria_vgl.exceptions import PromptNotFoundError
-from bria_vgl.log import get_logger
+from bria_vgl.logging import get_logger
+
+logger = get_logger(__name__)
 
 SYSTEM_PROMPT_FILE = "system_prompt.txt"
 FINAL_PROMPT_FILE = "final_prompt.txt"

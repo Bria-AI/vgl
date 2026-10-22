@@ -13,9 +13,11 @@ from litellm.types.utils import ModelResponse
 from PIL import Image
 
 from bria_vgl.exceptions import ContentFilteredError, InvalidResponseError, MaxTokensError
-from bria_vgl.log import get_logger
+from bria_vgl.logging import get_logger
 from bria_vgl.utils.images import to_base64_jpeg
 from bria_vgl.utils.labels import get_request_labels, label_value
+
+logger = get_logger(__name__)
 
 # Lighter model tried when the primary Gemini/Vertex model keeps failing.
 GEMINI_FALLBACK_MODEL = "gemini-3.1-flash-lite"

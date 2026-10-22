@@ -18,7 +18,7 @@ Ruff config (`pyproject.toml`):
 
 - **Type hints on public function signatures.** Use modern PEP 604 syntax: **`X | None`,
   not `Optional[X]`**, and `X | Y` over `Union[X, Y]` — `UP` auto-rewrites the old forms.
-- Log via `bria_vgl.log.get_logger(__name__)` at the call site (callers can inject a logger with `set_logger`), not ad-hoc `print`.
+- Module-level `logger = get_logger(__name__)` from `bria_vgl.logging` (resolves at each call, so `set_logger` still applies), not ad-hoc `print`.
 - Imports: standard library, then third-party, then local. Ruff's `I` rule orders them —
   don't order by hand.
 - This is a **base library**: keep dependency floors as open lower bounds, floored at the

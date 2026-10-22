@@ -10,5 +10,15 @@ def set_logger(logger: logging.Logger | logging.LoggerAdapter | None) -> None:
     _logger = logger
 
 
-def get_logger(name: str) -> logging.Logger | logging.LoggerAdapter:
-    return _logger if _logger is not None else logging.getLogger(name)
+class _Logger:
+    """Resolves to the injected logger, else the named bria_vgl.* logger, on each use."""
+
+    def __init__(self, name: str):
+        self._name = name
+
+    def __getattr__(self, attr):
+        return getattr(_logger if _logger is not None else logging.getLogger(self._name), attr)
+
+
+def get_logger(name: str) -> _Logger:
+    return _Logger(name)
