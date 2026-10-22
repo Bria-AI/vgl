@@ -40,6 +40,7 @@ All agent rules and skills are canonical in `.agents/`. Thin stubs under `.claud
 | `code-style` | Ruff + Pyright, line length 160, comments/docstrings, Conventional Commits, pre-commit |
 | `testing` | pytest layout/naming (`*_tests.py`), unit/integration markers, Arrange-Act-Assert, run tests after changes |
 | `prompts` | Prompt files are data — never reformat them; `{name}` templating |
+| `logging` | Module logger via `get_logger(__name__)`, constant messages, structured fields in `extra` |
 
 ### Skills (on-demand — read the `SKILL.md` when the task matches)
 

@@ -15,7 +15,7 @@ from bria_vgl.dialects import thales
 class TestPublicApi:
     def test_top_level_exports_exactly_the_core_verbs(self):
         # Arrange
-        expected = {"__version__", "DEFAULT_LLM", "ThinkingLevel", "create", "modify"}
+        expected = {"__version__", "DEFAULT_LLM", "ThinkingLevel", "create", "modify", "set_logger"}
 
         # Act / Assert
         assert set(bria_vgl.__all__) == expected
@@ -32,6 +32,7 @@ class TestPublicApi:
             "RateLimitError",
             "ContentFilteredError",
             "InvalidResponseError",
+            "UnusableReplyError",
         }
 
         # Act / Assert

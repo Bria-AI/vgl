@@ -1,13 +1,13 @@
 """Loading a payload's prompt pair and rendering it for one LLM call."""
 
-import logging
 import re
 from collections.abc import Mapping
 from pathlib import Path
 
 from bria_vgl.exceptions import PromptNotFoundError
+from bria_vgl.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 SYSTEM_PROMPT_FILE = "system_prompt.txt"
 FINAL_PROMPT_FILE = "final_prompt.txt"
@@ -91,5 +91,5 @@ def render_prompts(
 
     if unfilled := system_unfilled | final_unfilled:
         # Not an error: it renders as itself, visible and greppable.
-        logger.warning("unfilled prompt placeholders %s in %s", sorted(unfilled), directory.name)
+        logger.warning("unfilled prompt placeholders", extra={"placeholders": sorted(unfilled), "prompts": directory.name})
     return system_prompt, final_prompt

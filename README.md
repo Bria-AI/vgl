@@ -129,9 +129,22 @@ bria_vgl.modify(payload, llm=..., seed=...)
 - `thinking_level`: a `bria_vgl.ThinkingLevel` or its string, `"minimal"`, `"low"`, `"medium"` or `"high"`, on Gemini 3+. Anything else, or a level on an older Gemini, raises `ValueError` before the call. By default thinking is as low as the model allows.
 - `temperature` and `max_output_tokens`: thinking tokens count against `max_output_tokens`, so raise it with a high thinking level.
 
-bria-vgl logs under the `bria_vgl` logger hierarchy (`bria_vgl.gateway`, `bria_vgl.prompting`, …). Configure it the standard way — e.g. `logging.getLogger("bria_vgl").setLevel(logging.INFO)` and attach your own handler; add a `logging.Filter` if you need to inject contextual fields.
-
 A Gemini call that keeps failing (3 attempts) or hits a rate limit (429, not retried) moves to `gemini-3.1-flash-lite` on the same provider.
+
+## Logging
+
+bria-vgl logs structured records: a constant message, with the data as `extra` fields on the record (`model`, `duration_seconds`, `attempt`, `error`, …). Use a formatter that emits record attributes (e.g. a JSON formatter) to see them; a plain `%(message)s` formatter shows only the message.
+
+By default each module logs under the `bria_vgl` hierarchy (`bria_vgl.gateway`, `bria_vgl.prompting`, …); configure it the standard way, e.g. `logging.getLogger("bria_vgl").setLevel(logging.INFO)`.
+
+To route everything to your own logger, e.g. one carrying request context:
+
+```python
+adapter = logging.LoggerAdapter(logging.getLogger("my_service"), {"request_id": rid}, merge_extra=True)
+bria_vgl.set_logger(adapter)   # set_logger(None) restores the default
+```
+
+A plain `LoggerAdapter` replaces bria-vgl's `extra` fields with its own. Pass `merge_extra=True` (Python 3.13+) or override `process()` to keep both.
 
 ## Errors
 
@@ -144,8 +157,11 @@ Everything bria-vgl raises inherits from `bria_vgl.exceptions.VGLError`, except 
 | `ContentFilteredError` | the provider's safety filter blocked the prompt or the reply |
 | `LLMError` | any other provider failure, after retries and the fallback |
 | `InvalidResponseError` | the model's reply isn't a valid VGL |
+| `UnusableReplyError` | the model twice replied without a valid VGL, which reads as a refusal; it is both a `ContentFilteredError` and an `InvalidResponseError` |
 | `MaxTokensError` | the model ran out of output tokens mid-reply |
 | `PromptNotFoundError` | a bundled prompt is missing; a packaging fault, please report it |
+
+A reply that isn't a valid VGL is asked for once more, with the next seed. A model that won't depict a prompt often answers with JSON that leaves out the scene, or with prose, rather than a filtered reply, so a second such reply raises `UnusableReplyError`.
 
 ## Dialects
 
