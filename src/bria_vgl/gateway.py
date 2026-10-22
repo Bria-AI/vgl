@@ -30,17 +30,13 @@ RETRYABLE_ERRORS = (InternalServerError, ServiceUnavailableError, APIConnectionE
 FALLBACK_ERRORS = (RateLimitError, *RETRYABLE_ERRORS)
 
 
-class ThinkingLevel(str, Enum):  # noqa: UP042 - StrEnum would change str(), which callers of this public API may rely on
+class ThinkingLevel(str, Enum):  # noqa: UP042 - StrEnum would change str() and f-strings, which callers of this public API may rely on
     """Gemini 3's thinking levels. A plain string such as ``"high"`` is accepted wherever one is."""
 
     MINIMAL = "minimal"
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
-    def __format__(self, format_spec: str) -> str:
-        # Python 3.11+ formats (str, Enum) members as "ThinkingLevel.HIGH"; f-strings render the value, as on 3.10.
-        return format(self.value, format_spec)
 
 
 #: Attempts per model, applied to the primary and the fallback separately.

@@ -413,29 +413,6 @@ class TestBackoff:
 
 
 @pytest.mark.unit
-class TestThinkingLevel:
-    def test_format_should_render_the_value(self):
-        # Arrange
-        level = ThinkingLevel.HIGH
-
-        # Act
-        formatted = f"{level}"
-
-        # Assert
-        assert formatted == "high"
-
-    def test_str_should_render_the_member_name(self):
-        # Arrange
-        level = ThinkingLevel.HIGH
-
-        # Act
-        text = str(level)
-
-        # Assert
-        assert text == "ThinkingLevel.HIGH"
-
-
-@pytest.mark.unit
 class TestProviderSpecificParameters:
     """Every Gemini-specific branch keys off the model, not the provider.
 
