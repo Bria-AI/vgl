@@ -3,7 +3,7 @@
 ## Formatting & Linting
 
 - **Ruff** is the formatter *and* linter. Do not use black, isort, or flake8.
-- Line length: **160**. Target version: **py310**.
+- Line length: **160**. Target version: **py311**.
 - **Pyright** for type checking (experimental features on; excludes `.venv`, `node_modules`,
   `__pycache__`). Run it as `uv run --all-extras --all-groups pyright` — the extras provide the
   optional-dependency imports (`google.auth`, `boto3`) so Pyright sees them.
