@@ -34,7 +34,7 @@ dependencies = [
     # The VGL models and payloads. v2-only API, so 2.0 is the honest floor.
     "pydantic>=2.0",
     # Floor is a version vgl is known to run on, not the newest release.
-    "litellm>=1.80.11",
+    "litellm>=1.80.11,!=1.107.0",
     # Imported for the base class of litellm's provider errors. Floor matches litellm's own.
     "openai>=2.20.0",
     # NOT used by vgl. litellm imports yaml at base import time
