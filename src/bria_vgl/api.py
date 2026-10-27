@@ -7,13 +7,18 @@ from litellm.exceptions import RateLimitError as LiteLLMRateLimitError
 from openai import OpenAIError
 
 from bria_vgl import gateway
-from bria_vgl.exceptions import AuthenticationError, ContentFilteredError, LLMError, RateLimitError
+from bria_vgl.exceptions import AuthenticationError, ContentFilteredError, InvalidResponseError, LLMError, RateLimitError, UnusableReplyError
 from bria_vgl.gateway import ThinkingLevel
+from bria_vgl.logging import get_logger
 from bria_vgl.payload import Payload, Request, T
 from bria_vgl.prompting import render_prompts
 from bria_vgl.utils.vertex import validate_vertex_env
 
+logger = get_logger(__name__)
+
 DEFAULT_LLM = "gemini/gemini-3.5-flash-lite"
+#: Gemini takes a 32-bit seed.
+_SEEDS = 2**31
 
 
 def create(
@@ -71,7 +76,21 @@ def _run(payload: Payload[T], request: Request, *, llm: str, seed: int | None, s
     _check_gemini_key(llm)
     system_prompt, user_prompt = render_prompts(request.prompts, request.context, style_preset, request.system_prompt, request.final_prompt)
     try:
-        text = gateway.call(
+        return payload.parse(_call(request, system_prompt, user_prompt, llm=llm, seed=seed))
+    except InvalidResponseError as invalid:
+        logger.warning("Reply without a valid VGL; retrying once", extra={"model": llm, "error": str(invalid)})
+    # Another seed, so a glitch isn't replayed. A second invalid reply reads as a refusal, the model leaving out the scene.
+    retry_seed = None if seed is None else (seed + 1) % _SEEDS
+    try:
+        return payload.parse(_call(request, system_prompt, user_prompt, llm=llm, seed=retry_seed))
+    except InvalidResponseError as invalid:
+        raise UnusableReplyError(f"{llm} twice replied without a valid VGL: {invalid}") from invalid
+
+
+def _call(request: Request, system_prompt: str, user_prompt: str, *, llm: str, seed: int | None) -> str:
+    """The model's reply, with provider errors raised as vgl's."""
+    try:
+        return gateway.call(
             model_name=llm,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
@@ -91,4 +110,3 @@ def _run(payload: Payload[T], request: Request, *, llm: str, seed: int | None, s
     # Every litellm provider error subclasses openai's.
     except OpenAIError as error:
         raise LLMError(str(error)) from error
-    return payload.parse(text)

@@ -7,6 +7,7 @@ __all__ = [
     "RateLimitError",
     "ContentFilteredError",
     "InvalidResponseError",
+    "UnusableReplyError",
 ]
 
 
@@ -40,3 +41,7 @@ class ContentFilteredError(LLMError):
 
 class InvalidResponseError(VGLError):
     """The model's reply isn't valid JSON for the payload's VGL model."""
+
+
+class UnusableReplyError(ContentFilteredError, InvalidResponseError):
+    """The model twice replied without a valid VGL, which reads as a refusal: it leaves out the scene of a prompt it won't depict."""

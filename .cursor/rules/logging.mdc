@@ -1,0 +1,6 @@
+---
+description: Logging via the injectable module logger, constant messages, structured fields in extra
+alwaysApply: true
+---
+
+@.agents/rules/logging.md
