@@ -40,7 +40,7 @@ dependencies = [
     # NOT used by vgl. litellm imports yaml at base import time
     # (integrations/dotprompt/prompt_manager.py) but only declares pyyaml under its `cli`
     # and `proxy` extras, so without this a clean install of bria-vgl fails on `import bria_vgl`
-    # with ModuleNotFoundError: yaml. Verified against litellm 1.90.0. Remove only once
+    # with ModuleNotFoundError: yaml. Verified against litellm 1.90.0 and 1.103.1. Remove only once
     # litellm declares it, or stops importing it unconditionally.
     "pyyaml>=6.0.1",
 ]
