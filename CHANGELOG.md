@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.1](https://github.com/Bria-AI/vgl/compare/v0.10.0...v0.10.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* ask once more for an invalid VGL reply, then raise it as a refusal ([#43](https://github.com/Bria-AI/vgl/issues/43)) ([f7d0803](https://github.com/Bria-AI/vgl/commit/f7d08034d0c5d7d8c91e5c84cac14a6fe30e3fea))
+* exclude litellm 1.107.0, the compromised release ([#45](https://github.com/Bria-AI/vgl/issues/45)) ([8211c2c](https://github.com/Bria-AI/vgl/commit/8211c2cdbc4c1a2bd78b51e40ffbc8e6c751f6f8))
+
 ## [0.10.0](https://github.com/Bria-AI/vgl/compare/v0.9.0...v0.10.0) (2026-10-21)
 
 
