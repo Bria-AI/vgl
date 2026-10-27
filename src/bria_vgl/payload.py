@@ -41,6 +41,14 @@ def _is_filled(_path, _key, value) -> bool:
     return not (value is None or value in ("", [], {}) or (isinstance(value, float) and math.isnan(value)))
 
 
+def _drop_textless_renders(reply: object) -> object:
+    """The model sometimes lists an element "without text" as a text render with empty text; that's no text render."""
+    if isinstance(reply, dict) and isinstance(reply.get("text_render"), list):
+        renders = [render for render in reply["text_render"] if not isinstance(render, dict) or "text" in render]
+        reply = {**reply, "text_render": renders or None}
+    return reply
+
+
 class Payload(BaseModel, Generic[T]):
     """A prompt in, the dialect's VGL model out."""
 
@@ -61,7 +69,7 @@ class Payload(BaseModel, Generic[T]):
     def parse(self, text: str) -> T:
         """Drop empty values the model returned, then validate. Fields outside ``vgl_model`` are dropped."""
         try:
-            return self.vgl_model.model_validate(remap(json.loads(text), visit=_is_filled))  # type: ignore[return-value]
+            return self.vgl_model.model_validate(_drop_textless_renders(remap(json.loads(text), visit=_is_filled)))  # type: ignore[return-value]
         except (json.JSONDecodeError, TypeError, ValidationError) as invalid:
             raise InvalidResponseError(f"reply isn't a valid {self.vgl_model.__name__}: {invalid}") from invalid
 
