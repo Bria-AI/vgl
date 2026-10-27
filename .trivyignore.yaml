@@ -1,4 +1,5 @@
-# pillow 12.3.0 is locked for Python 3.10 only: no pillow release with these fixes supports 3.10 (13.0.0 needs 3.11+).
+# pillow 12.3.0 and filelock 4.1.0 are locked for Python 3.10 only: the releases that carry these fixes
+# (pillow 13.0.0, filelock 4.2.1) need 3.11+, and the lock already resolves 3.11+ to them.
 vulnerabilities:
   - id: CVE-2026-112403
     purls: ["pkg:pypi/pillow@12.3.0"]
@@ -38,3 +39,23 @@ vulnerabilities:
     purls: ["pkg:pypi/pillow@12.3.0"]
   - id: CVE-2026-112902
     purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112398
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96639
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96637
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96640
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96642
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96643
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96644
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-96778
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: GHSA-78g4-xqwv-q3g8
+    purls: ["pkg:pypi/pillow@12.3.0"]
+  - id: CVE-2026-112940
+    purls: ["pkg:pypi/filelock@4.1.0"]
