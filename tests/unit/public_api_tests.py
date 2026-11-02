@@ -31,6 +31,7 @@ class TestPublicApi:
             "AuthenticationError",
             "RateLimitError",
             "ContentFilteredError",
+            "PromptTooLongError",
             "InvalidResponseError",
             "UnusableReplyError",
         }
