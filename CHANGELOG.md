@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/Bria-AI/vgl/compare/v0.10.1...v0.10.2) (2026-11-09)
+
+
+### Bug Fixes
+
+* add device-screens rule to the generate system prompt ([#51](https://github.com/Bria-AI/vgl/issues/51)) ([92f4d6c](https://github.com/Bria-AI/vgl/commit/92f4d6c1cca0306e811fcabd36e5c203e0c0ef02))
+
 ## [0.10.1](https://github.com/Bria-AI/vgl/compare/v0.10.0...v0.10.1) (2026-10-27)
 
 
