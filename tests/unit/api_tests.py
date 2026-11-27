@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from litellm.exceptions import AuthenticationError, ContentPolicyViolationError, RateLimitError, ServiceUnavailableError
+from litellm.exceptions import AuthenticationError, ContentPolicyViolationError, ContextWindowExceededError, RateLimitError, ServiceUnavailableError
 
 import bria_vgl
 from bria_vgl import exceptions, gateway
@@ -186,6 +186,18 @@ class TestProviderErrors:
         # Act / Assert
         with pytest.raises(exceptions.ContentFilteredError):
             bria_vgl.create(Generate(prompt="p"))
+
+    def test_an_input_over_the_context_window_should_raise_a_prompt_too_long_error(self, monkeypatch):
+        # Arrange
+        too_long = ContextWindowExceededError(message="input token count exceeds the maximum", llm_provider="gemini", model="gemini/x")
+        monkeypatch.setattr(gateway, "call", _raise(too_long))
+
+        # Act
+        with pytest.raises(exceptions.PromptTooLongError) as raised:
+            bria_vgl.create(Generate(prompt="p"))
+
+        # Assert
+        assert raised.value.__cause__ is too_long
 
     def test_any_other_provider_error_should_raise_an_llm_error(self, monkeypatch):
         # Arrange

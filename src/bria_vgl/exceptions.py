@@ -6,6 +6,7 @@ __all__ = [
     "AuthenticationError",
     "RateLimitError",
     "ContentFilteredError",
+    "PromptTooLongError",
     "InvalidResponseError",
     "UnusableReplyError",
 ]
@@ -37,6 +38,10 @@ class RateLimitError(LLMError):
 
 class ContentFilteredError(LLMError):
     """The provider's safety filter blocked the prompt or the reply."""
+
+
+class PromptTooLongError(LLMError):
+    """The prompt and images exceed the model's input context window."""
 
 
 class InvalidResponseError(VGLError):
