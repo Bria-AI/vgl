@@ -247,6 +247,18 @@ class TestParse:
         assert isinstance(vgl, ThalesVGL)
         assert vgl.style_medium is None and vgl.objects is None
 
+    def test_a_text_render_on_empty_text_should_be_dropped(self, a_vgl_dict):
+        # Arrange
+        textless = {"text": "", "location": "top-left", "size": "small", "color": "white", "font": "minimalist", "appearance_details": "no text or numbers"}
+        kept = {**textless, "text": "PLAY"}
+        reply = json.dumps({**a_vgl_dict, "text_render": [textless, kept]})
+
+        # Act
+        vgl = Generate(prompt="p").parse(reply)
+
+        # Assert
+        assert [render.text for render in vgl.text_render or []] == ["PLAY"]
+
     def test_scores_should_not_be_added(self, a_vgl_dict):
         vgl = Generate(prompt="p").parse(json.dumps(a_vgl_dict))
         assert "aesthetic_score" not in vgl.aesthetics.model_dump()
