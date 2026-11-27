@@ -11,7 +11,7 @@ from boltons.iterutils import remap
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from bria_vgl.exceptions import InvalidResponseError
+from bria_vgl.exceptions import ContentFilteredError, InvalidResponseError
 from bria_vgl.gateway import ThinkingLevel
 from bria_vgl.model import VGL
 
@@ -61,9 +61,22 @@ class Payload(BaseModel, Generic[T]):
     def parse(self, text: str) -> T:
         """Drop empty values the model returned, then validate. Fields outside ``vgl_model`` are dropped."""
         try:
-            return self.vgl_model.model_validate(remap(json.loads(text), visit=_is_filled))  # type: ignore[return-value]
-        except (json.JSONDecodeError, TypeError, ValidationError) as invalid:
+            reply = remap(json.loads(text), visit=_is_filled)
+        except (json.JSONDecodeError, TypeError) as invalid:
             raise InvalidResponseError(f"reply isn't a valid {self.vgl_model.__name__}: {invalid}") from invalid
+        try:
+            return self.vgl_model.model_validate(reply)  # type: ignore[return-value]
+        except ValidationError as invalid:
+            if self._is_refusal(reply):
+                raise ContentFilteredError("the model declined the request in its reply") from invalid
+            raise InvalidResponseError(f"reply isn't a valid {self.vgl_model.__name__}: {invalid}") from invalid
+
+    def _is_refusal(self, reply: object) -> bool:
+        """A model that declines writes why in ``short_description`` and leaves every other required field empty."""
+        if not isinstance(reply, dict) or not isinstance(reply.get("short_description"), str):
+            return False
+        required = {name for name, info in self.vgl_model.model_fields.items() if info.is_required()} - {"short_description"}
+        return not required & reply.keys()
 
 
 def vgl_json(vgl: VGL) -> str:
